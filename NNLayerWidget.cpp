@@ -3,12 +3,14 @@
 #include <iostream>
 
 #include <QMenu>
+#include <QMouseEvent>
 
 static const QString c_qstrDeleteActionName = "delete layer";
 
 NNLayerWidget::NNLayerWidget(int iId)
     : m_pMenu{new QMenu{this}},
-      m_iId{iId}
+      m_iId{iId},
+      m_bGrabbed{false}
 {
     setAttribute(Qt::WA_DeleteOnClose);
 
@@ -27,6 +29,30 @@ void NNLayerWidget::deleteLayer()
     emit layerDeleted(getId());
 }
 
+bool NNLayerWidget::isGrabbed() const
+{
+    return m_bGrabbed;
+}
+
+void NNLayerWidget::mousePressEvent(QMouseEvent* pEvent)
+{
+    if (pEvent->button() == Qt::RightButton)
+    {
+        auto Pos = mapToGlobal(pEvent->pos());
+
+        m_pMenu->popup(Pos);
+    }
+    if (pEvent->button() == Qt::LeftButton)
+    {
+        m_bGrabbed = true;
+    }
+}
+
+void NNLayerWidget::mouseReleaseEvent(QMouseEvent* pEvent)
+{
+    m_bGrabbed = false;
+}
+
 void NNLayerWidget::onProcActions(QAction* pAction)
 {
     if (c_qstrDeleteActionName == pAction->text())
@@ -37,8 +63,6 @@ void NNLayerWidget::onProcActions(QAction* pAction)
 
 void NNLayerWidget::initGUI()
 {
-    setFlat(true);
-
     setFixedSize(100, 20);
 
     auto Palette = palette();
@@ -51,8 +75,6 @@ void NNLayerWidget::initGUI()
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     m_pMenu->addAction(new QAction{c_qstrDeleteActionName});
-
-    setMenu(m_pMenu);
 }
 
 void NNLayerWidget::createConnections()

@@ -13,6 +13,7 @@ public:
     MainWidget();
 
     void mousePressEvent(QMouseEvent* pEvent) final;
+    void mouseMoveEvent(QMouseEvent* pEvent) final;
 
 private slots:
     void onAddLayer(const QPoint& crPoint);

@@ -7,6 +7,8 @@ MainWidget::MainWidget()
 {
     initGUI();
     createConnections();
+
+    setMouseTracking(false);
 }
 
 void MainWidget::mousePressEvent(QMouseEvent* pEvent)
@@ -20,6 +22,15 @@ void MainWidget::mousePressEvent(QMouseEvent* pEvent)
     QWidget::mousePressEvent(pEvent);
 }
 
+void MainWidget::mouseMoveEvent(QMouseEvent* pEvent)
+{
+    for (auto pLayer : m_vLayers)
+    {
+        if (pLayer->isGrabbed())
+            pLayer->move(pEvent->pos());
+    }
+}
+
 void MainWidget::onAddLayer(const QPoint& crPoint)
 {
     auto pLayer = new NNLayerWidget{m_vLayers.size()};
@@ -27,6 +38,7 @@ void MainWidget::onAddLayer(const QPoint& crPoint)
     pLayer->setParent(this);
     pLayer->move(crPoint);
     pLayer->show();
+    this->stackUnder(pLayer);
 
     auto bRes = true;
 

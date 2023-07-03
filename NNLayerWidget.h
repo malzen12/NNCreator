@@ -2,7 +2,7 @@
 
 #include <QPushButton>
 
-class NNLayerWidget: public QPushButton
+class NNLayerWidget: public QWidget
 {
     Q_OBJECT
 
@@ -12,6 +12,11 @@ public:
     int getId() const;
 
     void deleteLayer();
+
+    bool isGrabbed() const;
+
+    void mousePressEvent(QMouseEvent* pEvent) final;
+    void mouseReleaseEvent(QMouseEvent* pEvent) final;
 
 signals:
     void layerDeleted(int);
@@ -24,5 +29,7 @@ private:
     void createConnections();
 
     QMenu* m_pMenu;
+
     int m_iId;
+    bool m_bGrabbed;
 };
