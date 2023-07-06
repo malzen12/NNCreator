@@ -23,6 +23,16 @@ int NNLayerWidget::getId() const
     return m_iId;
 }
 
+void NNLayerWidget::setSettings(const NNLayerSettings& crSettings) noexcept
+{
+    m_Settings = crSettings;
+}
+
+const NNLayerSettings& NNLayerWidget::getSettings() const noexcept
+{
+    return m_Settings;
+}
+
 void NNLayerWidget::deleteLayer()
 {
     close();

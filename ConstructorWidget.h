@@ -5,12 +5,12 @@
 
 #include "NNLayerWidget.h"
 
-class MainWidget: public QWidget
+class ConstructorWidget: public QWidget
 {
     Q_OBJECT
 
 public:
-    MainWidget();
+    ConstructorWidget();
 
     void mousePressEvent(QMouseEvent* pEvent) final;
     void mouseMoveEvent(QMouseEvent* pEvent) final;

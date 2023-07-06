@@ -1,8 +1,8 @@
-#include "mainwidget.h"
+#include "ConstructorWidget.h"
 
 #include <QMouseEvent>
 
-MainWidget::MainWidget()
+ConstructorWidget::ConstructorWidget()
     : m_pMenu{new QMenu{this}}
 {
     initGUI();
@@ -11,7 +11,7 @@ MainWidget::MainWidget()
     setMouseTracking(false);
 }
 
-void MainWidget::mousePressEvent(QMouseEvent* pEvent)
+void ConstructorWidget::mousePressEvent(QMouseEvent* pEvent)
 {
     if (pEvent->button() == Qt::RightButton)
     {
@@ -22,7 +22,7 @@ void MainWidget::mousePressEvent(QMouseEvent* pEvent)
     QWidget::mousePressEvent(pEvent);
 }
 
-void MainWidget::mouseMoveEvent(QMouseEvent* pEvent)
+void ConstructorWidget::mouseMoveEvent(QMouseEvent* pEvent)
 {
     for (auto pLayer : m_vLayers)
     {
@@ -31,7 +31,7 @@ void MainWidget::mouseMoveEvent(QMouseEvent* pEvent)
     }
 }
 
-void MainWidget::onAddLayer(const QPoint& crPoint)
+void ConstructorWidget::onAddLayer(const QPoint& crPoint)
 {
     auto pLayer = new NNLayerWidget{m_vLayers.size()};
 
@@ -49,12 +49,12 @@ void MainWidget::onAddLayer(const QPoint& crPoint)
     m_vLayers.push_back(pLayer);
 }
 
-void MainWidget::onProcActions(QAction* /*pAction*/)
+void ConstructorWidget::onProcActions(QAction* /*pAction*/)
 {
     onAddLayer(mapFromGlobal(m_pMenu->pos()));
 }
 
-void MainWidget::onDeleteLayer(int iId)
+void ConstructorWidget::onDeleteLayer(int iId)
 {
     auto itLayer = std::find_if(m_vLayers.begin(), m_vLayers.end(), [iId](NNLayerWidget* pWdg)
     {
@@ -67,13 +67,13 @@ void MainWidget::onDeleteLayer(int iId)
     m_vLayers.erase(itLayer);
 }
 
-void MainWidget::initGUI()
+void ConstructorWidget::initGUI()
 {
     m_pMenu->addAction(new QAction{"Add Layer"});
     setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
-void MainWidget::createConnections()
+void ConstructorWidget::createConnections()
 {
     auto bRes = true;
 
