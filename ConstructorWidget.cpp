@@ -43,6 +43,8 @@ void ConstructorWidget::onDeleteLayer(NNLayerWidget* pDeletingLayer)
 
     pDeletingLayer->deleteLayer();
 
+    ///< @todo disconnect
+
     update();
 }
 
@@ -58,6 +60,7 @@ void ConstructorWidget::onAddLayer(const QPoint& crPoint)
     auto bRes = true;
 
     bRes = static_cast<bool>(connect(pLayer, SIGNAL(becomeActive(std::size_t)), SLOT(onChangeActive(std::size_t))));
+    bRes = static_cast<bool>(connect(pLayer, SIGNAL(makeForward(std::size_t)), SLOT(onMakeForward(std::size_t))));
 
     assert(bRes);
 
@@ -86,6 +89,18 @@ void ConstructorWidget::onChangeActive(std::size_t sId)
     m_sActive = sId;
 
     makeActive(m_sActive, true);
+}
+
+void ConstructorWidget::onMakeForward(std::size_t sId)
+{
+    auto pActive = get_layer(m_sActive, m_vLayers);
+    auto pForward = get_layer(sId, m_vLayers);
+
+    if (!pActive || !pForward)
+        return;
+
+    pActive->addForward(pForward);
+    update();
 }
 
 void ConstructorWidget::initGUI()
@@ -131,6 +146,7 @@ void ConstructorWidget::mouseMoveEvent(QMouseEvent* pEvent)
         if (pLayer->isGrabbed())
             pLayer->move(pEvent->pos() - pLayer->getGrabbedPos());
     }
+    update();
 }
 
 void ConstructorWidget::paintEvent(QPaintEvent* pEvent)
@@ -145,11 +161,11 @@ void ConstructorWidget::paintEvent(QPaintEvent* pEvent)
     {
         for(auto pForward : pLayer->getForward())
         {
-            auto From = pLayer->pos() + pLayer->rect().center();
-            auto To = pForward->pos() + pForward->rect().center();
+            auto From = pLayer->pos() + QPoint{pLayer->rect().center().x(), pLayer->rect().bottom()};
+            auto To = pForward->pos() + QPoint{pForward->rect().center().x(), 0};
 
-            std::cout << From.x() << "+" << From.y() << " - " << To.x() << "+" << To.y() << std::endl;
             Painter.drawLine(From, To);
+            Painter.drawEllipse(To, 5, 5);
         }
     }
 }

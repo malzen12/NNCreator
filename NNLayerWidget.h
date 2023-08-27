@@ -33,6 +33,7 @@ public:
 
 signals:
     void becomeActive(std::size_t);
+    void makeForward(std::size_t);
 
 private:
     void initGUI();

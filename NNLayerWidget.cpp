@@ -47,8 +47,12 @@ void NNLayerWidget::mousePressEvent(QMouseEvent* pEvent)
     {
         m_bGrabbed = true;
         m_GrabbedPos = pEvent->pos();
+        makeActive(true);
     }
-    makeActive(true);
+    else if (pEvent->button() == Qt::RightButton)
+    {
+        emit makeForward(m_sId);
+    }
 }
 
 void NNLayerWidget::mouseReleaseEvent(QMouseEvent* /*pEvent*/)

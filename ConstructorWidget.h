@@ -22,7 +22,8 @@ public slots:
 private slots:
     void onAddLayer(const QPoint& crPoint);
     void onProcActions(QAction* /*pAction*/);
-    void onChangeActive(std::size_t siId);
+    void onChangeActive(std::size_t sId);
+    void onMakeForward(std::size_t sId);
 
 private:
     void initGUI();
