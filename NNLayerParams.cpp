@@ -42,7 +42,7 @@ NNLayerParams NNLayerParams::makeConv1d()
 
         return  vInputSize.size() > 1 &&
                 vInputSize.back() > sKernel &&
-                vInputSize[vInputSize.size() - 1] == sInDepth;
+                vInputSize[vInputSize.size() - 2] == sInDepth;
     };
 
     calc_output_size_func fCalcOutput = [](const std::vector<NNParam>& vParams, const std::vector<std::size_t>& vInputSize)

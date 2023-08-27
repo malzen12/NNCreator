@@ -10,7 +10,8 @@ static const QString c_qstrDeleteActionName = "delete layer";
 NNLayerWidget::NNLayerWidget(std::size_t sId, const NNLayerParams& crParams)
     : m_sId{sId},
       m_bGrabbed{false},
-      m_Params{crParams}
+      m_Params{crParams},
+      m_bValidParams{true}
 {
     setAttribute(Qt::WA_DeleteOnClose);
 
@@ -22,12 +23,12 @@ std::size_t NNLayerWidget::getId() const
     return m_sId;
 }
 
-void NNLayerWidget::setSettings(const NNLayerParams& crSettings) noexcept
+void NNLayerWidget::setParams(const NNLayerParams& crParams) noexcept
 {
-    m_Params = crSettings;
+    m_Params = crParams;
 }
 
-const NNLayerParams& NNLayerWidget::getSettings() const noexcept
+const NNLayerParams& NNLayerWidget::getParams() const noexcept
 {
     return m_Params;
 }
@@ -97,6 +98,23 @@ const std::vector<NNLayerWidget*>& NNLayerWidget::getForward() const noexcept
     return m_vForwards;
 }
 
+void NNLayerWidget::resetInputSize()
+{
+    m_vInputSize.clear();
+}
+
+void NNLayerWidget::addInputSize(const std::vector<std::size_t>& vInputSize) ///< @todo
+{
+    m_vInputSize = vInputSize;
+    m_bValidParams = m_Params.checkInputSize(m_vInputSize);
+    updateStyle();
+}
+
+std::vector<std::size_t> NNLayerWidget::calcOutputSize() const
+{
+    return m_Params.calcOutputSize(m_vInputSize);
+}
+
 void NNLayerWidget::initGUI()
 {
     setFixedSize(100, 20);
@@ -108,9 +126,17 @@ void NNLayerWidget::initGUI()
     makeActive(true);
 }
 
+QColor make_color(bool bActive, bool bValid)
+{
+    if (bValid)
+        return bActive?  QColor{125, 255, 125} : QColor{125, 125, 255};
+    else
+        return bActive?  QColor{200, 200, 125} : QColor{255, 125, 125};
+}
+
 void NNLayerWidget::updateStyle()
 {
-    auto Color = m_bActive?  QColor{125, 255, 125} : QColor{125, 125, 255};
+    auto Color = make_color(m_bActive, m_bValidParams);
 
     auto Palette = palette();
     Palette.setColor(QPalette::Window, Color);

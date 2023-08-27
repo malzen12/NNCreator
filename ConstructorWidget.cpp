@@ -1,6 +1,7 @@
 #include "ConstructorWidget.h"
 
 #include <iostream>
+#include <queue>
 
 #include <QMouseEvent>
 #include <QPaintEvent>
@@ -35,11 +36,13 @@ ConstructorWidget::ConstructorWidget()
     setMouseTracking(false);
 }
 
-void ConstructorWidget::onSetParams(const NNLayerParams& crSettings)
+void ConstructorWidget::onSetParams(const NNLayerParams& crParams)
 {
     auto pLayerWidget = get_layer(m_sActive, m_vLayers);
 
-    pLayerWidget->setSettings(crSettings);
+    pLayerWidget->setParams(crParams);
+
+    checkSizes();
 }
 
 void ConstructorWidget::onDeleteActive()
@@ -79,8 +82,8 @@ void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& c
 
     auto bRes = true;
 
-    bRes = static_cast<bool>(connect(pLayer, SIGNAL(becomeActive(std::size_t)), SLOT(onChangeActive(std::size_t))));
-    bRes = static_cast<bool>(connect(pLayer, SIGNAL(makeForward(std::size_t)), SLOT(onMakeForward(std::size_t))));
+    bRes &= static_cast<bool>(connect(pLayer, SIGNAL(becomeActive(std::size_t)), SLOT(onChangeActive(std::size_t))));
+    bRes &= static_cast<bool>(connect(pLayer, SIGNAL(makeForward(std::size_t)), SLOT(onMakeForward(std::size_t))));
 
     assert(bRes);
 
@@ -93,6 +96,8 @@ void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& c
     m_vLayers.push_back(pLayer);
 
     onChangeActive(m_vLayers.back()->getId());
+
+    checkSizes();
 
     update();
 }
@@ -171,7 +176,7 @@ void ConstructorWidget::makeActive(std::size_t sId, bool bActive)
     pLayerWidget->makeActive(bActive);
 
     if (bActive)
-        emit paramsChanged(pLayerWidget->getSettings());
+        emit paramsChanged(pLayerWidget->getParams());
 }
 
 void ConstructorWidget::mousePressEvent(QMouseEvent* pEvent)
@@ -212,6 +217,56 @@ void ConstructorWidget::paintEvent(QPaintEvent* pEvent)
 
             Painter.drawLine(From, To);
             Painter.drawEllipse(To, 5, 5);
+        }
+    }
+}
+
+void ConstructorWidget::checkSizes()
+{
+    auto pStart = findStart();
+
+    for (auto pLayer : m_vLayers)
+        pLayer->resetInputSize();
+
+    pStart->addInputSize({1, 20}); ///< @todo
+
+    bfs(pStart, [](NNLayerWidget* pCurrent, NNLayerWidget* pNext)
+    {
+        pNext->addInputSize(pCurrent->calcOutputSize());
+    });
+}
+
+NNLayerWidget* ConstructorWidget::findStart()
+{
+    for (auto pChecking : m_vLayers)
+    {
+        auto bStart = std::all_of(m_vLayers.begin(), m_vLayers.end(), [pChecking](NNLayerWidget* pLayer)
+        {
+            const auto& vForwards = pLayer->getForward();
+            auto it = std::find(vForwards.begin(), vForwards.end(), pChecking);
+            return it == vForwards.end();
+        });
+        if (bStart)
+            return pChecking;
+    }
+    throw std::runtime_error("circular dependensis");
+}
+
+void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fProc)
+{
+    std::queue<NNLayerWidget*> qToVisit;
+    qToVisit.push(pStart);
+
+    while (!qToVisit.empty())
+    {
+        auto pCurrent = qToVisit.front();
+        qToVisit.pop();
+
+        for (auto pNext : pCurrent->getForward())
+        {
+            fProc(pCurrent, pNext);
+
+            qToVisit.push(pNext);
         }
     }
 }

@@ -9,6 +9,8 @@ class ConstructorWidget: public QWidget
 {
     Q_OBJECT
 
+    using bfs_proc = std::function<void(NNLayerWidget*, NNLayerWidget*)>;
+
 public:
     ConstructorWidget();
 
@@ -16,7 +18,7 @@ signals:
     void paramsChanged(const NNLayerParams&);
 
 public slots:
-    void onSetParams(const NNLayerParams& crSettings);
+    void onSetParams(const NNLayerParams& crParams);
     void onDeleteActive();
 
 private slots:
@@ -34,6 +36,11 @@ private:
     void mousePressEvent(QMouseEvent* pEvent) final;
     void mouseMoveEvent(QMouseEvent* pEvent) final;
     void paintEvent(QPaintEvent* pEvent) final;
+
+    void checkSizes();
+    NNLayerWidget* findStart();
+
+    void bfs(NNLayerWidget* pStart, bfs_proc fProc);
 
 private:
     QMenu* m_pMenu;

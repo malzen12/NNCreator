@@ -79,9 +79,11 @@ const NNLayerParams& ParamsEditorWidget::collectParams()
 {
     std::vector<NNParam> vParams;
 
-    while (auto pWdg = static_cast<ParamWidget*>(m_pParamsLayout->itemAt(0)->widget()))
+    for (auto i = 0; i < m_pParamsLayout->count(); ++i)
     {
-        vParams.push_back(pWdg->collectValue());
+        auto pWdg = static_cast<ParamWidget*>(m_pParamsLayout->itemAt(i)->widget());
+        if (pWdg)
+            vParams.push_back(pWdg->collectValue());
     }
 
     m_Params.setParams(vParams);

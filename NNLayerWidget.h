@@ -13,8 +13,8 @@ public:
 
     std::size_t getId() const;
 
-    void setSettings(const NNLayerParams& crSettings) noexcept;
-    const NNLayerParams& getSettings() const noexcept;
+    void setParams(const NNLayerParams& crParams) noexcept;
+    const NNLayerParams& getParams() const noexcept;
 
     void deleteLayer();
 
@@ -31,6 +31,10 @@ public:
     void removeForward(NNLayerWidget* pForward);
     const std::vector<NNLayerWidget*>& getForward() const noexcept;
 
+    void resetInputSize();
+    void addInputSize(const std::vector<std::size_t>& vInputSize);
+    std::vector<std::size_t> calcOutputSize() const;
+
 signals:
     void becomeActive(std::size_t);
     void makeForward(std::size_t);
@@ -46,6 +50,9 @@ private:
     bool m_bActive;
 
     NNLayerParams m_Params;
+
+    std::vector<std::size_t> m_vInputSize;
+    bool m_bValidParams;
 
     std::vector<NNLayerWidget*> m_vForwards;
 };

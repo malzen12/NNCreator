@@ -38,11 +38,15 @@ void ParamWidget::initGUI()
     }
     else if (m_Param.getType() == QVariant::Type::String)
     {
-        m_pEditorWidget = new QLineEdit;
+        auto pWdg = new QLineEdit;
+        pWdg->setText(m_Param.getValue().toString());
+        m_pEditorWidget = pWdg;
     }
     else if (m_Param.getType() == QVariant::Type::Int)
     {
-        m_pEditorWidget = new QSpinBox;
+        auto pWdg = new QSpinBox;
+        pWdg->setValue(m_Param.getValue().toUInt());
+        m_pEditorWidget = pWdg;
     }
 
 
