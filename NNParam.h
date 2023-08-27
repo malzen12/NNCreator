@@ -12,6 +12,8 @@ public:
     QVariant::Type getType() const noexcept;
     bool isEnum() const noexcept;
 
+    void setValue(const QVariant& crValue);
+
 private:
     std::string m_strName;
     QVariant m_Value;

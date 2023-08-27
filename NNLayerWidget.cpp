@@ -77,6 +77,10 @@ const QPoint& NNLayerWidget::getGrabbedPos() const noexcept
 
 void NNLayerWidget::addForward(NNLayerWidget* pForward)
 {
+    auto it = std::find(m_vForwards.begin(), m_vForwards.end(), pForward);
+    if (it != m_vForwards.end())
+        return ;
+
     m_vForwards.push_back(pForward);
 }
 

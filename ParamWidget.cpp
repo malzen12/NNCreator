@@ -16,15 +16,15 @@ const NNParam& ParamWidget::collectValue()
 {
     if (m_Param.isEnum())
     {
-        m_Param = NNParam{m_Param.getName(), static_cast<QComboBox*>(m_pEditorWidget)->currentText(), QVariant::Type::String, true};
+        m_Param.setValue(static_cast<QComboBox*>(m_pEditorWidget)->currentText());
     }
     else if (m_Param.getType() == QVariant::Type::String)
     {
-        m_Param = NNParam{m_Param.getName(), static_cast<QLineEdit*>(m_pEditorWidget)->text()};
+        m_Param.setValue(static_cast<QLineEdit*>(m_pEditorWidget)->text());
     }
     else if (m_Param.getType() == QVariant::Type::Int)
     {
-        m_Param = NNParam{m_Param.getName(), static_cast<QSpinBox*>(m_pEditorWidget)->value()};
+        m_Param.setValue(static_cast<QSpinBox*>(m_pEditorWidget)->value());
     }
 
     return m_Param;

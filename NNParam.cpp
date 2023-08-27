@@ -28,3 +28,8 @@ bool NNParam::isEnum() const noexcept
 {
     return m_bEnum;
 }
+
+void NNParam::setValue(const QVariant& crValue)
+{
+    m_Value = crValue;
+}
