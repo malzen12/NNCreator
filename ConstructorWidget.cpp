@@ -29,7 +29,7 @@ ConstructorWidget::ConstructorWidget()
     setMouseTracking(false);
 }
 
-void ConstructorWidget::onSetSettings(std::size_t sId, const NNLayerSettings& crSettings)
+void ConstructorWidget::onSetSettings(std::size_t sId, const NNLayerParams& crSettings)
 {
     auto pLayerWidget = get_layer(sId, m_vLayers);
 
@@ -48,9 +48,9 @@ void ConstructorWidget::onDeleteLayer(NNLayerWidget* pDeletingLayer)
     update();
 }
 
-void ConstructorWidget::onAddLayer(const QPoint& crPoint)
+void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams)
 {
-    auto pLayer = new NNLayerWidget{m_vLayers.size()};
+    auto pLayer = new NNLayerWidget{m_vLayers.size(), crParams};
 
     pLayer->setParent(this);
     pLayer->move(crPoint);
@@ -74,9 +74,24 @@ void ConstructorWidget::onAddLayer(const QPoint& crPoint)
     update();
 }
 
-void ConstructorWidget::onProcActions(QAction* /*pAction*/)
+void ConstructorWidget::onProcActions(QAction* pAction)
 {
-    onAddLayer(mapFromGlobal(m_pMenu->pos()));
+    if ("Make linear" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeLinear());
+    else if ("Make conv1d" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConv1d());
+    else if ("Make pool" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makePool());
+    else if ("Make embedding" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeEmbedding());
+    else if ("Make reshape" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeReshape());
+    else if ("Make normalization" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeNormalization());
+    else if ("Make activation" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeActivation());
+    else
+        throw std::runtime_error("unknown action passed");
 }
 
 void ConstructorWidget::onChangeActive(std::size_t sId)
@@ -105,7 +120,14 @@ void ConstructorWidget::onMakeForward(std::size_t sId)
 
 void ConstructorWidget::initGUI()
 {
-    m_pMenu->addAction(new QAction{"Add Layer"});
+    m_pMenu->addAction(new QAction{"Make linear"});
+    m_pMenu->addAction(new QAction{"Make conv1d"});
+    m_pMenu->addAction(new QAction{"Make pool"});
+    m_pMenu->addAction(new QAction{"Make embedding"});
+    m_pMenu->addAction(new QAction{"Make reshape"});
+    m_pMenu->addAction(new QAction{"Make normalization"});
+    m_pMenu->addAction(new QAction{"Make activation"});
+
     setContextMenuPolicy(Qt::CustomContextMenu);
 }
 

@@ -8,8 +8,9 @@ SOURCES += \
     ActivationFunc.cpp \
     ConstructorWidget.cpp \
     MainWidget.cpp \
-    NNLayerSettings.cpp \
+    NNLayerParams.cpp \
     NNLayerWidget.cpp \
+    NNParam.cpp \
     SettingsEdit.cpp \
     main.cpp
 
@@ -17,6 +18,7 @@ HEADERS += \
     ActivationFunc.h \
     ConstructorWidget.h \
     MainWidget.h \
-    NNLayerSettings.h \
+    NNLayerParams.h \
     NNLayerWidget.h \
+    NNParam.h \
     SettingsEdit.h

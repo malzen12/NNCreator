@@ -7,9 +7,10 @@
 
 static const QString c_qstrDeleteActionName = "delete layer";
 
-NNLayerWidget::NNLayerWidget(std::size_t sId)
+NNLayerWidget::NNLayerWidget(std::size_t sId, const NNLayerParams& crParams)
     : m_sId{sId},
-      m_bGrabbed{false}
+      m_bGrabbed{false},
+      m_Params{crParams}
 {
     setAttribute(Qt::WA_DeleteOnClose);
 
@@ -21,14 +22,14 @@ std::size_t NNLayerWidget::getId() const
     return m_sId;
 }
 
-void NNLayerWidget::setSettings(const NNLayerSettings& crSettings) noexcept
+void NNLayerWidget::setSettings(const NNLayerParams& crSettings) noexcept
 {
-    m_Settings = crSettings;
+    m_Params = crSettings;
 }
 
-const NNLayerSettings& NNLayerWidget::getSettings() const noexcept
+const NNLayerParams& NNLayerWidget::getSettings() const noexcept
 {
-    return m_Settings;
+    return m_Params;
 }
 
 void NNLayerWidget::deleteLayer()

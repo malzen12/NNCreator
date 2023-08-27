@@ -32,7 +32,7 @@ private:
     QComboBox* m_pAFuncEdit;
     QPushButton* m_pConfirm;
 
-    NNLayerSettings m_Settings;
+    NNLayerParams m_Params;
 
     NNLayerWidget* m_pLayerToEdit;
 };

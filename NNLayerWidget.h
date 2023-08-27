@@ -2,19 +2,19 @@
 
 #include <QPushButton>
 
-#include "NNLayerSettings.h"
+#include "NNLayerParams.h"
 
 class NNLayerWidget: public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit NNLayerWidget(std::size_t sId);
+    explicit NNLayerWidget(std::size_t sId, const NNLayerParams& crParams);
 
     std::size_t getId() const;
 
-    void setSettings(const NNLayerSettings& crSettings) noexcept;
-    const NNLayerSettings& getSettings() const noexcept;
+    void setSettings(const NNLayerParams& crSettings) noexcept;
+    const NNLayerParams& getSettings() const noexcept;
 
     void deleteLayer();
 
@@ -45,7 +45,7 @@ private:
 
     bool m_bActive;
 
-    NNLayerSettings m_Settings;
+    NNLayerParams m_Params;
 
     std::vector<NNLayerWidget*> m_vForwards;
 };

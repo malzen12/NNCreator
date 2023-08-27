@@ -16,7 +16,7 @@ void SettingsEdit::setLayerToEdit(NNLayerWidget* pLayer)
 {
     m_pLayerToEdit = pLayer;
 
-    m_Settings = m_pLayerToEdit->getSettings();
+    m_Params = m_pLayerToEdit->getSettings();
 
     initEditors();
 }
@@ -24,19 +24,19 @@ void SettingsEdit::setLayerToEdit(NNLayerWidget* pLayer)
 void SettingsEdit::onChangeName()
 {
     if (m_pLayerToEdit)
-        m_Settings.setName(m_pNameEdit->text().toStdString());
+        m_Params.setName(m_pNameEdit->text().toStdString());
 }
 
 void SettingsEdit::onChangeNCnt(int iCnt)
 {
-    if (m_pLayerToEdit)
-        m_Settings.setNCnt(iCnt);
+//    if (m_pLayerToEdit)
+//        m_Params.setNCnt(iCnt);
 }
 
 void SettingsEdit::onSetAFunc(const QString& qstrFuncName)
 {
-    if (m_pLayerToEdit)
-        m_Settings.setAFunc(ActivationFunc::fromString(qstrFuncName));
+//    if (m_pLayerToEdit)
+//        m_Params.setAFunc(ActivationFunc::fromString(qstrFuncName));
 }
 
 void SettingsEdit::initGUI()
@@ -68,9 +68,9 @@ void SettingsEdit::createConnections()
 
 void SettingsEdit::initEditors()
 {
-    m_pNameEdit->setText(QString::fromStdString(m_Settings.getName()));
-    m_pNeuronCntEdit->setValue(m_Settings.getNCnt());
+//    m_pNameEdit->setText(QString::fromStdString(m_Params.getName()));
+//    m_pNeuronCntEdit->setValue(m_Params.getNCnt());
 
-    auto iComboBoxIndex = m_pAFuncEdit->findText(m_Settings.getAFunc().toString());
-    m_pAFuncEdit->setCurrentIndex(iComboBoxIndex);
+//    auto iComboBoxIndex = m_pAFuncEdit->findText(m_Params.getAFunc().toString());
+//    m_pAFuncEdit->setCurrentIndex(iComboBoxIndex);
 }
