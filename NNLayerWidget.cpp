@@ -7,20 +7,18 @@
 
 static const QString c_qstrDeleteActionName = "delete layer";
 
-NNLayerWidget::NNLayerWidget(int iId)
-    : m_pMenu{new QMenu{this}},
-      m_iId{iId},
+NNLayerWidget::NNLayerWidget(std::size_t sId)
+    : m_sId{sId},
       m_bGrabbed{false}
 {
     setAttribute(Qt::WA_DeleteOnClose);
 
     initGUI();
-    createConnections();
 }
 
-int NNLayerWidget::getId() const
+std::size_t NNLayerWidget::getId() const
 {
-    return m_iId;
+    return m_sId;
 }
 
 void NNLayerWidget::setSettings(const NNLayerSettings& crSettings) noexcept
@@ -36,7 +34,6 @@ const NNLayerSettings& NNLayerWidget::getSettings() const noexcept
 void NNLayerWidget::deleteLayer()
 {
     close();
-    emit layerDeleted(getId());
 }
 
 bool NNLayerWidget::isGrabbed() const
@@ -46,52 +43,68 @@ bool NNLayerWidget::isGrabbed() const
 
 void NNLayerWidget::mousePressEvent(QMouseEvent* pEvent)
 {
-    if (pEvent->button() == Qt::RightButton)
-    {
-        auto Pos = mapToGlobal(pEvent->pos());
-
-        m_pMenu->popup(Pos);
-    }
     if (pEvent->button() == Qt::LeftButton)
     {
         m_bGrabbed = true;
+        m_GrabbedPos = pEvent->pos();
     }
+    makeActive(true);
 }
 
-void NNLayerWidget::mouseReleaseEvent(QMouseEvent* pEvent)
+void NNLayerWidget::mouseReleaseEvent(QMouseEvent* /*pEvent*/)
 {
     m_bGrabbed = false;
 }
 
-void NNLayerWidget::onProcActions(QAction* pAction)
+void NNLayerWidget::makeActive(bool bActive)
 {
-    if (c_qstrDeleteActionName == pAction->text())
-    {
-        deleteLayer();
-    }
+    m_bActive = bActive;
+    if (m_bActive)
+        emit becomeActive(m_sId);
+
+    updateStyle();
+}
+
+const QPoint& NNLayerWidget::getGrabbedPos() const noexcept
+{
+    return m_GrabbedPos;
+}
+
+void NNLayerWidget::addForward(NNLayerWidget* pForward)
+{
+    m_vForwards.push_back(pForward);
+}
+
+void NNLayerWidget::removeForward(NNLayerWidget* pForward)
+{
+    auto itForward = std::find(m_vForwards.begin(), m_vForwards.end(), pForward);
+
+    if (itForward != m_vForwards.end())
+        m_vForwards.erase(itForward);
+}
+
+const std::vector<NNLayerWidget*>& NNLayerWidget::getForward() const noexcept
+{
+    return m_vForwards;
 }
 
 void NNLayerWidget::initGUI()
 {
     setFixedSize(100, 20);
 
-    auto Palette = palette();
-    Palette.setColor(QPalette::Window, QColor{125, 125, 255});
-    Palette.setColor(QPalette::Button, QColor{125, 125, 255});
-    setPalette(Palette);
-
     setAutoFillBackground(true);
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
-    m_pMenu->addAction(new QAction{c_qstrDeleteActionName});
+    makeActive(true);
 }
 
-void NNLayerWidget::createConnections()
+void NNLayerWidget::updateStyle()
 {
-    auto bRes = true;
+    auto Color = m_bActive?  QColor{125, 255, 125} : QColor{125, 125, 255};
 
-    bRes = static_cast<bool>(connect(m_pMenu, SIGNAL(triggered(QAction*)), SLOT(onProcActions(QAction*))));
-
-    assert(bRes);
+    auto Palette = palette();
+    Palette.setColor(QPalette::Window, Color);
+    Palette.setColor(QPalette::Button, Color);
+    setPalette(Palette);
 }

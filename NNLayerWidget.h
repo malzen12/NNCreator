@@ -9,9 +9,9 @@ class NNLayerWidget: public QWidget
     Q_OBJECT
 
 public:
-    explicit NNLayerWidget(int iId);
+    explicit NNLayerWidget(std::size_t sId);
 
-    int getId() const;
+    std::size_t getId() const;
 
     void setSettings(const NNLayerSettings& crSettings) noexcept;
     const NNLayerSettings& getSettings() const noexcept;
@@ -23,20 +23,28 @@ public:
     void mousePressEvent(QMouseEvent* pEvent) final;
     void mouseReleaseEvent(QMouseEvent* pEvent) final;
 
-signals:
-    void layerDeleted(int);
+    void makeActive(bool bActive);
 
-private slots:
-    void onProcActions(QAction* pAction);
+    const QPoint& getGrabbedPos() const noexcept;
+
+    void addForward(NNLayerWidget* pForward);
+    void removeForward(NNLayerWidget* pForward);
+    const std::vector<NNLayerWidget*>& getForward() const noexcept;
+
+signals:
+    void becomeActive(std::size_t);
 
 private:
     void initGUI();
-    void createConnections();
+    void updateStyle();
 
-    QMenu* m_pMenu;
-
-    int m_iId;
+    std::size_t m_sId;
     bool m_bGrabbed;
+    QPoint m_GrabbedPos;
+
+    bool m_bActive;
 
     NNLayerSettings m_Settings;
+
+    std::vector<NNLayerWidget*> m_vForwards;
 };
