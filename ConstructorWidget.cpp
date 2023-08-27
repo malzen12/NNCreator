@@ -19,6 +19,12 @@ NNLayerWidget* get_layer(std::size_t sId, std::vector<NNLayerWidget*> vLayers)
     return *itLayer;
 }
 
+static std::size_t get_increment()
+{
+    static std::size_t sIncrement = 0;
+    return ++sIncrement;
+}
+
 ConstructorWidget::ConstructorWidget()
     : m_pMenu{new QMenu{this}},
       m_sActive{0}
@@ -29,28 +35,42 @@ ConstructorWidget::ConstructorWidget()
     setMouseTracking(false);
 }
 
-void ConstructorWidget::onSetSettings(std::size_t sId, const NNLayerParams& crSettings)
+void ConstructorWidget::onSetParams(const NNLayerParams& crSettings)
 {
-    auto pLayerWidget = get_layer(sId, m_vLayers);
+    auto pLayerWidget = get_layer(m_sActive, m_vLayers);
 
     pLayerWidget->setSettings(crSettings);
 }
 
-void ConstructorWidget::onDeleteLayer(NNLayerWidget* pDeletingLayer)
+void ConstructorWidget::onDeleteActive()
 {
+    if (m_vLayers.empty())
+        return ;
+
+    auto pDeletingLayer = get_layer(m_sActive, m_vLayers);
+
     for (auto pLayer : m_vLayers)
         pLayer->removeForward(pDeletingLayer);
 
     pDeletingLayer->deleteLayer();
 
+    auto itLayer = std::find(m_vLayers.begin(), m_vLayers.end(), pDeletingLayer);
+
+    if (m_vLayers.end() == itLayer)
+        throw std::runtime_error("invalid id passed");
+
+    m_vLayers.erase(itLayer);
+
     ///< @todo disconnect
+
+    m_sActive = m_vLayers.front()->getId();
 
     update();
 }
 
 void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams)
 {
-    auto pLayer = new NNLayerWidget{m_vLayers.size(), crParams};
+    auto pLayer = new NNLayerWidget{get_increment(), crParams};
 
     pLayer->setParent(this);
     pLayer->move(crPoint);
@@ -64,10 +84,13 @@ void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& c
 
     assert(bRes);
 
-    m_vLayers.push_back(pLayer);
+    if (!m_vLayers.empty())
+    {
+        auto pActiveLayer = get_layer(m_sActive, m_vLayers);
+        pActiveLayer->addForward(pLayer);
+    }
 
-    auto pActiveLayer = get_layer(m_sActive, m_vLayers);
-    pActiveLayer->addForward(pLayer);
+    m_vLayers.push_back(pLayer);
 
     onChangeActive(m_vLayers.back()->getId());
 
@@ -99,7 +122,8 @@ void ConstructorWidget::onChangeActive(std::size_t sId)
     if (m_sActive == sId)
         return ;
 
-    makeActive(m_sActive, false);
+    if (m_vLayers.size() > 1)
+        makeActive(m_sActive, false);
 
     m_sActive = sId;
 
@@ -147,7 +171,7 @@ void ConstructorWidget::makeActive(std::size_t sId, bool bActive)
     pLayerWidget->makeActive(bActive);
 
     if (bActive)
-        emit settingsChanged(pLayerWidget->getSettings());
+        emit paramsChanged(pLayerWidget->getSettings());
 }
 
 void ConstructorWidget::mousePressEvent(QMouseEvent* pEvent)

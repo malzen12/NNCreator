@@ -4,7 +4,7 @@
 
 MainWidget::MainWidget()
     : m_pConstructorWidget{new ConstructorWidget},
-      m_pSettingsEdit{new SettingsEdit}
+      m_pSettingsEdit{new ParamsEditorWidget}
 {
     initGUI();
     createConnections();
@@ -24,6 +24,10 @@ void MainWidget::initGUI()
 void MainWidget::createConnections()
 {
     auto bRes = true;
+
+    bRes &= static_cast<bool>(connect(m_pConstructorWidget, SIGNAL(paramsChanged(NNLayerParams)), m_pSettingsEdit, SLOT(onSetParams(NNLayerParams))));
+    bRes &= static_cast<bool>(connect(m_pSettingsEdit, SIGNAL(paramsChanged(NNLayerParams)), m_pConstructorWidget, SLOT(onSetParams(NNLayerParams))));
+    bRes &= static_cast<bool>(connect(m_pSettingsEdit, SIGNAL(deleteActive()), m_pConstructorWidget, SLOT(onDeleteActive())));
 
     assert(bRes);
 }

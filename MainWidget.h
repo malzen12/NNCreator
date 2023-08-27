@@ -1,7 +1,7 @@
 #pragma once
 
 #include "ConstructorWidget.h"
-#include "SettingsEdit.h"
+#include "ParamsEditorWidget.h"
 
 class MainWidget: public QWidget
 {
@@ -15,6 +15,6 @@ private:
     void createConnections();
 
     ConstructorWidget* m_pConstructorWidget;
-    SettingsEdit* m_pSettingsEdit;
+    ParamsEditorWidget* m_pSettingsEdit;
 };
 

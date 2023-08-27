@@ -13,11 +13,11 @@ public:
     ConstructorWidget();
 
 signals:
-    void settingsChanged(NNLayerParams);
+    void paramsChanged(const NNLayerParams&);
 
 public slots:
-    void onSetSettings(std::size_t sId, const NNLayerParams& crSettings);
-    void onDeleteLayer(NNLayerWidget* pLayer);
+    void onSetParams(const NNLayerParams& crSettings);
+    void onDeleteActive();
 
 private slots:
     void onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams);

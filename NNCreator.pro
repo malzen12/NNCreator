@@ -11,7 +11,8 @@ SOURCES += \
     NNLayerParams.cpp \
     NNLayerWidget.cpp \
     NNParam.cpp \
-    SettingsEdit.cpp \
+    ParamWidget.cpp \
+    ParamsEditorWidget.cpp \
     main.cpp
 
 HEADERS += \
@@ -21,4 +22,5 @@ HEADERS += \
     NNLayerParams.h \
     NNLayerWidget.h \
     NNParam.h \
-    SettingsEdit.h
+    ParamWidget.h \
+    ParamsEditorWidget.h
