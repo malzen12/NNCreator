@@ -7,6 +7,12 @@
 #include <QPaintEvent>
 #include <QPainter>
 
+static std::size_t get_increment()
+{
+    static std::size_t sIncrement = 0;
+    return ++sIncrement;
+}
+
 NNLayerWidget* get_layer(std::size_t sId, std::vector<NNLayerWidget*> vLayers)
 {
     auto itLayer = std::find_if(vLayers.begin(), vLayers.end(), [sId](NNLayerWidget* pWdg)
@@ -20,10 +26,47 @@ NNLayerWidget* get_layer(std::size_t sId, std::vector<NNLayerWidget*> vLayers)
     return *itLayer;
 }
 
-static std::size_t get_increment()
+void print_params(const std::string& strParam, const std::string& strTag)
 {
-    static std::size_t sIncrement = 0;
-    return ++sIncrement;
+    std::cout << "<" << strTag << ">" << strParam << "</" << strTag << ">" << std::endl;
+}
+
+void print_params(std::size_t sParam, const std::string& strTag)
+{
+    std::cout << "<" << strTag << ">" << sParam << "</" << strTag << ">" << std::endl;
+}
+
+void print_params(const NNParam& crParam)
+{
+    std::cout << "<" << crParam.getName() << ">";
+
+    if (crParam.getType() == QVariant::Type::String)
+        std::cout << crParam.getValue().toString().toStdString();
+    else if (crParam.getType() == QVariant::Type::UInt)
+        std::cout << crParam.getValue().toUInt();
+    else
+        std::cout << crParam.getValue().toString().toStdString();
+
+    std::cout << "</" << crParam.getName() << ">" << std::endl;
+}
+
+void print_params(const NNLayerParams& crParams)
+{
+    print_params(crParams.getName(), "type");
+
+    for (const auto& crParam : crParams.getParams())
+        print_params(crParam);
+}
+
+template<typename t_Param>
+void print_params(const std::vector<t_Param>& vParams, const std::string& strTag = "v")
+{
+    std::cout << "<" << strTag << ">" << std::endl;
+
+    for (const auto& crParam : vParams)
+        print_params(crParam, "v");
+
+    std::cout << "</" << strTag << ">" << std::endl;
 }
 
 ConstructorWidget::ConstructorWidget()
@@ -78,7 +121,23 @@ void ConstructorWidget::onSetInputSize(const std::vector<std::size_t>& vInputSiz
 
 void ConstructorWidget::onMakeXml()
 {
-    return ;
+    auto pStart = findStart();
+
+    ///< @todo replace cout to fout
+    std::cout << "<?xml version=\"1.0\"?>" << std::endl;
+    std::cout << "<data>" << std::endl;
+    print_params(m_vInputSize, "data_size");
+
+    std::cout << "<layers>" << std::endl;
+    bfs(pStart, [](NNLayerWidget* pCurrent, NNLayerWidget* /*pNext*/)
+    {
+        std::cout << "<l>" << std::endl;
+        print_params(pCurrent->getId(), "id");
+        print_params(pCurrent->getParams());
+        std::cout << "</l>" << std::endl;
+    });
+    std::cout << "</layers>" << std::endl;
+    std::cout << "</data>" << std::endl;
 }
 
 void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams)
@@ -245,7 +304,8 @@ void ConstructorWidget::checkSizes()
 
     bfs(pStart, [](NNLayerWidget* pCurrent, NNLayerWidget* pNext)
     {
-        pNext->addInputSize(pCurrent->calcOutputSize());
+        if (pNext)
+            pNext->addInputSize(pCurrent->calcOutputSize());
     });
 }
 
@@ -275,11 +335,16 @@ void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fProc)
         auto pCurrent = qToVisit.front();
         qToVisit.pop();
 
-        for (auto pNext : pCurrent->getForward())
+        if (pCurrent->getForward().empty())
+            fProc(pCurrent, nullptr);
+        else
         {
-            fProc(pCurrent, pNext);
+            for (auto pNext : pCurrent->getForward())
+            {
+                fProc(pCurrent, pNext);
 
-            qToVisit.push(pNext);
+                qToVisit.push(pNext);
+            }
         }
     }
 }
