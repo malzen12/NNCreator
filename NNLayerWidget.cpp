@@ -4,14 +4,36 @@
 
 #include <QMenu>
 #include <QMouseEvent>
+#include <QVBoxLayout>
 
 static const QString c_qstrDeleteActionName = "delete layer";
+
+QColor make_color(bool bActive, bool bValid)
+{
+    if (bValid)
+        return bActive?  QColor{125, 255, 125} : QColor{125, 125, 255};
+    else
+        return bActive?  QColor{200, 200, 125} : QColor{255, 125, 125};
+}
+
+QString make_size_string(const std::vector<std::size_t>& vSize)
+{
+    QString qstrRes = "[";
+    for (auto sSize : vSize)
+        qstrRes += QString::number(sSize) + ", ";
+
+    qstrRes += "]";
+    return qstrRes;
+}
 
 NNLayerWidget::NNLayerWidget(std::size_t sId, const NNLayerParams& crParams)
     : m_sId{sId},
       m_bGrabbed{false},
       m_Params{crParams},
-      m_bValidParams{true}
+      m_bValidParams{true},
+      m_pInputLabel{new QLabel{make_size_string(m_vInputSize)}},
+      m_pNameLabel{new QLabel{QString::fromStdString(m_Params.getName())}},
+      m_pOutputLabel{new QLabel{make_size_string({})}}
 {
     setAttribute(Qt::WA_DeleteOnClose);
 
@@ -105,8 +127,16 @@ void NNLayerWidget::resetInputSize()
 
 void NNLayerWidget::addInputSize(const std::vector<std::size_t>& vInputSize) ///< @todo
 {
-    m_vInputSize = vInputSize;
-    m_bValidParams = m_Params.checkInputSize(m_vInputSize);
+    m_bValidParams = m_Params.checkInputSize(vInputSize);
+
+    if (m_Params.getName() == "" && m_bValidParams)
+    {
+        auto sAxis = m_Params.getParams()[0].getValue().toUInt();
+        m_vInputSize[sAxis] += vInputSize[sAxis];
+    }
+    else
+        m_vInputSize = vInputSize;
+
     updateStyle();
 }
 
@@ -117,21 +147,19 @@ std::vector<std::size_t> NNLayerWidget::calcOutputSize() const
 
 void NNLayerWidget::initGUI()
 {
-    setFixedSize(100, 20);
+//    setFixedSize(100, 20);
 
     setAutoFillBackground(true);
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 
     makeActive(true);
-}
 
-QColor make_color(bool bActive, bool bValid)
-{
-    if (bValid)
-        return bActive?  QColor{125, 255, 125} : QColor{125, 125, 255};
-    else
-        return bActive?  QColor{200, 200, 125} : QColor{255, 125, 125};
+    auto pLayout = new QVBoxLayout{this};
+
+    pLayout->addWidget(m_pInputLabel);
+    pLayout->addWidget(m_pNameLabel);
+    pLayout->addWidget(m_pOutputLabel);
 }
 
 void NNLayerWidget::updateStyle()
@@ -142,4 +170,11 @@ void NNLayerWidget::updateStyle()
     Palette.setColor(QPalette::Window, Color);
     Palette.setColor(QPalette::Button, Color);
     setPalette(Palette);
+
+    m_pInputLabel->setText(make_size_string(m_vInputSize));
+
+    if (!m_vInputSize.empty())
+        m_pOutputLabel->setText(make_size_string(calcOutputSize()));
+
+    setFixedWidth(fontMetrics().horizontalAdvance(m_pOutputLabel->text()) * 2);
 }

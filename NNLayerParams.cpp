@@ -49,7 +49,7 @@ NNLayerParams NNLayerParams::makeConv1d()
     {
         assert(vInputSize.size() > 1);
 
-        auto sOutDepth = vParams[0].getValue().toUInt();
+        auto sOutDepth = vParams[1].getValue().toUInt();
 
         auto sKernel = vParams[2].getValue().toUInt();
         auto sStride = vParams[3].getValue().toUInt();
@@ -167,6 +167,26 @@ NNLayerParams NNLayerParams::makeActivation()
     check_input_size_func fCheckInput = [](const std::vector<NNParam>& /*vParams*/, const std::vector<std::size_t>& /*vInputSize*/)
     {
         return true;
+    };
+
+    calc_output_size_func fCalcOutput = [](const std::vector<NNParam>& /*vParams*/, const std::vector<std::size_t>& vInputSize)
+    {
+        return vInputSize;
+    };
+
+    return NNLayerParams{strName, vParams, fCheckInput, fCalcOutput};
+}
+
+NNLayerParams NNLayerParams::makeConcatinate()
+{
+    auto strName = "Concatinate";
+
+    std::vector<NNParam> vParams = {NNParam{"axis", 0}};
+
+    check_input_size_func fCheckInput = [](const std::vector<NNParam>& vParams, const std::vector<std::size_t>& vInputSize)
+    {
+        auto sAxis = vParams[0].getValue().toUInt();
+        return sAxis < vInputSize.size();
     };
 
     calc_output_size_func fCalcOutput = [](const std::vector<NNParam>& /*vParams*/, const std::vector<std::size_t>& vInputSize)

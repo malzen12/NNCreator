@@ -1,6 +1,6 @@
 #pragma once
 
-#include <QPushButton>
+#include <QLabel>
 
 #include "NNLayerParams.h"
 
@@ -55,4 +55,8 @@ private:
     bool m_bValidParams;
 
     std::vector<NNLayerWidget*> m_vForwards;
+
+    QLabel* m_pInputLabel;
+    QLabel* m_pNameLabel;
+    QLabel* m_pOutputLabel;
 };

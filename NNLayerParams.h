@@ -22,6 +22,7 @@ public:
     static NNLayerParams makeReshape();
     static NNLayerParams makeNormalization();
     static NNLayerParams makeActivation();
+    static NNLayerParams makeConcatinate();
 
     void setName(const std::string& strName) noexcept;
     const std::string& getName() const noexcept;
