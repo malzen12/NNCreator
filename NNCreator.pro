@@ -7,6 +7,7 @@ CONFIG += c++17
 SOURCES += \
     ActivationFunc.cpp \
     ConstructorWidget.cpp \
+    GlobalSettingsWidget.cpp \
     MainWidget.cpp \
     NNLayerParams.cpp \
     NNLayerWidget.cpp \
@@ -18,6 +19,7 @@ SOURCES += \
 HEADERS += \
     ActivationFunc.h \
     ConstructorWidget.h \
+    GlobalSettingsWidget.h \
     MainWidget.h \
     NNLayerParams.h \
     NNLayerWidget.h \

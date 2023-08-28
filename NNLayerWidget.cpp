@@ -127,21 +127,32 @@ void NNLayerWidget::resetInputSize()
 
 void NNLayerWidget::addInputSize(const std::vector<std::size_t>& vInputSize) ///< @todo
 {
-    m_bValidParams = m_Params.checkInputSize(vInputSize);
-
-    if (m_Params.getName() == "Concatinate" && m_bValidParams && !m_vInputSize.empty())
+    if (vInputSize.empty())
     {
-        auto sAxis = m_Params.getParams()[0].getValue().toUInt();
-        m_vInputSize[sAxis] += vInputSize[sAxis];
+        m_bValidParams = false;
+        updateStyle();
     }
     else
-        m_vInputSize = vInputSize;
+    {
+        m_bValidParams = m_Params.checkInputSize(vInputSize);
 
-    updateStyle();
+        if (m_Params.getName() == "Concatinate" && m_bValidParams && !m_vInputSize.empty())
+        {
+            auto sAxis = m_Params.getParams()[0].getValue().toUInt();
+            m_vInputSize[sAxis] += vInputSize[sAxis];
+        }
+        else
+            m_vInputSize = vInputSize;
+
+        updateStyle();
+    }
 }
 
 std::vector<std::size_t> NNLayerWidget::calcOutputSize() const
 {
+    if (m_vInputSize.empty())
+        return {};
+
     return m_Params.calcOutputSize(m_vInputSize);
 }
 

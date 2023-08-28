@@ -71,6 +71,16 @@ void ConstructorWidget::onDeleteActive()
     update();
 }
 
+void ConstructorWidget::onSetInputSize(const std::vector<std::size_t>& vInputSize)
+{
+    m_vInputSize = vInputSize;
+}
+
+void ConstructorWidget::onMakeXml()
+{
+    return ;
+}
+
 void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams)
 {
     auto pLayer = new NNLayerWidget{get_increment(), crParams};
@@ -231,7 +241,7 @@ void ConstructorWidget::checkSizes()
     for (auto pLayer : m_vLayers)
         pLayer->resetInputSize();
 
-    pStart->addInputSize({1, 20}); ///< @todo
+    pStart->addInputSize(m_vInputSize);
 
     bfs(pStart, [](NNLayerWidget* pCurrent, NNLayerWidget* pNext)
     {
