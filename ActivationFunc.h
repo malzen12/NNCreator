@@ -1,19 +1,28 @@
 #pragma once
 
-#include "QString"
+#include <vector>
+
+#include <QString>
+#include <QStringList>
+
+enum class activation_func
+{
+    relu = 0,
+    leaky_relu,
+    cnt
+};
 
 class ActivationFunc
 {
 public:
-    enum class activation_func
-    {
-        relu = 0,
-        leaky_relu
-    };
-
     explicit ActivationFunc(activation_func Type);
 
     static ActivationFunc fromString(const QString& qstrName);
+
+    static QStringList getAllNames();
+    static std::vector<activation_func> getAllValues();
+
+    static std::string getClassName();
 
     QString toString() const;
 

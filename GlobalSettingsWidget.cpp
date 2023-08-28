@@ -31,7 +31,7 @@ void GlobalSettingsWidget::onUpdateInputSize()
 
 void GlobalSettingsWidget::initGUI()
 {
-    m_pInputSizeEdit->setInputMask("[99.99.99.99.99]");
+    m_pInputSizeEdit->setInputMask("999.999.999.999");
 
     auto pLayout = new QVBoxLayout{this};
 

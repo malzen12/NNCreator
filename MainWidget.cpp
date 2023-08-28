@@ -16,7 +16,6 @@ void MainWidget::initGUI()
 {
     auto pLayout = new QHBoxLayout{this};
 
-
     pLayout->addWidget(m_pGlobalSettingsWidget, 10);
     pLayout->addWidget(m_pConstructorWidget, 80);
     pLayout->addWidget(m_pSettingsEdit, 10);

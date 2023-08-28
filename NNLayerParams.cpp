@@ -1,5 +1,8 @@
 #include "NNLayerParams.h"
 
+#include "ActivationFunc.h"
+#include "InitializerFunc.h"
+
 NNLayerParams::NNLayerParams(const std::string& strName, const std::vector<NNParam>& vParams, check_input_size_func fCheckInput, calc_output_size_func fCalcOutput)
     : m_strName{strName},
       m_vParams{vParams},
@@ -13,7 +16,11 @@ NNLayerParams NNLayerParams::makeLinear()
 {
     auto strName = "Linear";
 
-    std::vector<NNParam> vParams = {NNParam{"input size", 0}, NNParam{"output size", 0}};
+    std::vector<NNParam> vParams = {NNParam{"input size", 0},
+                                    NNParam{"output size", 0},
+                                    NNParam{InitializerFunc::getClassName(),
+                                            InitializerFunc{static_cast<initializer_func>(0)}.toString(),
+                                            QVariant::Type::String, true}};
 
     check_input_size_func fCheckInput = [](const std::vector<NNParam>& vParams, const std::vector<std::size_t>& vInputSize)
     {
@@ -33,7 +40,15 @@ NNLayerParams NNLayerParams::makeLinear()
 NNLayerParams NNLayerParams::makeConv1d()
 {
     auto strName = "Conv1d";
-    std::vector<NNParam> vParams = {NNParam{"in depth", 0}, NNParam{"out depth", 0}, NNParam{"kernel size", 0}, NNParam{"stride", 1}, NNParam{"padding", 0}, NNParam{"dilitation", 1}};
+    std::vector<NNParam> vParams = {NNParam{"in depth", 0},
+                                    NNParam{"out depth", 0},
+                                    NNParam{"kernel size", 0},
+                                    NNParam{"stride", 1},
+                                    NNParam{"padding", 0},
+                                    NNParam{"dilitation", 1},
+                                    NNParam{InitializerFunc::getClassName(),
+                                            InitializerFunc{static_cast<initializer_func>(0)}.toString(),
+                                            QVariant::Type::String, true}};
 
     check_input_size_func fCheckInput = [](const std::vector<NNParam>& vParams, const std::vector<std::size_t>& vInputSize)
     {
@@ -160,9 +175,11 @@ NNLayerParams NNLayerParams::makeNormalization()
 
 NNLayerParams NNLayerParams::makeActivation()
 {
-    auto strName = "Activation function";
+    auto strName = ActivationFunc::getClassName();
 
-    std::vector<NNParam> vParams = {NNParam{"activation type", "relu", QVariant::Type::String, true}};///< @todo activation func
+    std::vector<NNParam> vParams = {NNParam{ActivationFunc::getClassName(),
+                                            ActivationFunc{activation_func::relu}.toString(),
+                                            QVariant::Type::String, true}};
 
     check_input_size_func fCheckInput = [](const std::vector<NNParam>& /*vParams*/, const std::vector<std::size_t>& /*vInputSize*/)
     {

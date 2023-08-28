@@ -5,6 +5,22 @@
 #include <QSpinBox>
 #include <QLineEdit>
 
+#include "ActivationFunc.h"
+#include "InitializerFunc.h"
+
+QStringList get_enum_names(const NNParam& crParam)
+{
+    if (ActivationFunc::getClassName() == crParam.getName())
+        return ActivationFunc::getAllNames();
+
+    else if (InitializerFunc::getClassName() == crParam.getName())
+        return InitializerFunc::getAllNames();
+
+    else
+        return {};
+}
+
+
 ParamWidget::ParamWidget(const NNParam& crParam)
     : m_Param{crParam},
       m_pNameLabel{new QLabel{QString::fromStdString(m_Param.getName())}}
@@ -34,7 +50,9 @@ void ParamWidget::initGUI()
 {
     if (m_Param.isEnum())
     {
-        m_pEditorWidget = new QComboBox;
+        auto pWdg = new QComboBox;
+        pWdg->addItems(get_enum_names(m_Param));
+        m_pEditorWidget = pWdg;
     }
     else if (m_Param.getType() == QVariant::Type::String)
     {
