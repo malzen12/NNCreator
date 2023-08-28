@@ -129,7 +129,7 @@ void NNLayerWidget::addInputSize(const std::vector<std::size_t>& vInputSize) ///
 {
     m_bValidParams = m_Params.checkInputSize(vInputSize);
 
-    if (m_Params.getName() == "" && m_bValidParams)
+    if (m_Params.getName() == "Concatinate" && m_bValidParams && !m_vInputSize.empty())
     {
         auto sAxis = m_Params.getParams()[0].getValue().toUInt();
         m_vInputSize[sAxis] += vInputSize[sAxis];
@@ -147,8 +147,6 @@ std::vector<std::size_t> NNLayerWidget::calcOutputSize() const
 
 void NNLayerWidget::initGUI()
 {
-//    setFixedSize(100, 20);
-
     setAutoFillBackground(true);
 
     setContextMenuPolicy(Qt::CustomContextMenu);

@@ -118,6 +118,8 @@ void ConstructorWidget::onProcActions(QAction* pAction)
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeNormalization());
     else if ("Make activation" == pAction->text())
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeActivation());
+    else if ("Make concatinate")
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConcatinate());
     else
         throw std::runtime_error("unknown action passed");
 }
@@ -156,6 +158,7 @@ void ConstructorWidget::initGUI()
     m_pMenu->addAction(new QAction{"Make reshape"});
     m_pMenu->addAction(new QAction{"Make normalization"});
     m_pMenu->addAction(new QAction{"Make activation"});
+    m_pMenu->addAction(new QAction{"Make concatinate"});
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 }
