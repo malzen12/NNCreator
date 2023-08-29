@@ -9,6 +9,9 @@ enum class activation_func
 {
     relu = 0,
     leaky_relu,
+    sigmoid,
+    tanh,
+    selu,
     cnt
 };
 

@@ -8,7 +8,10 @@
 enum class initializer_func
 {
     xavier = 0,
-    leaky_relu,
+    uniform,
+    normal,
+    dirac,
+    kaiming_normal,
     cnt
 };
 

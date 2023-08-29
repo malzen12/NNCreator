@@ -12,6 +12,12 @@ ActivationFunc ActivationFunc::fromString(const QString& qstrName)
         return ActivationFunc{activation_func::relu};
     else if ("LeakyRelu" == qstrName)
         return ActivationFunc{activation_func::leaky_relu};
+    else if ("Sigmoid" == qstrName)
+        return ActivationFunc{activation_func::sigmoid};
+    else if ("Tanh" == qstrName)
+        return ActivationFunc{activation_func::tanh};
+    else if ("Selu" == qstrName)
+        return ActivationFunc{activation_func::selu};
     else
         throw std::string{"Invalid func name"};
 }
@@ -48,6 +54,12 @@ QString ActivationFunc::toString() const
         return "Relu";
     else if (activation_func::leaky_relu == m_Type)
         return "LeakyRelu";
+    if (activation_func::sigmoid == m_Type)
+        return "Sigmoid";
+    else if (activation_func::tanh == m_Type)
+        return "Tanh";
+    if (activation_func::selu == m_Type)
+        return "Selu";
     else
         return "";
 }

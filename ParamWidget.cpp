@@ -38,9 +38,24 @@ const NNParam& ParamWidget::collectValue()
     {
         m_Param.setValue(static_cast<QLineEdit*>(m_pEditorWidget)->text());
     }
-    else if (m_Param.getType() == QVariant::Type::Int)
+    else if (m_Param.getType() == QVariant::Type::UInt)
     {
         m_Param.setValue(static_cast<QSpinBox*>(m_pEditorWidget)->value());
+    }
+    else if (m_Param.getType() == QVariant::Type::List)
+    {
+        auto StringList = static_cast<QLineEdit*>(m_pEditorWidget)->text().split(".");
+
+        QList<QVariant> lRes;
+
+        for (const auto& qstrAxis : StringList)
+        {
+            auto sAxis = qstrAxis.toUInt();
+            if (sAxis)
+                lRes.push_back(sAxis);
+        }
+
+        m_Param.setValue(lRes);
     }
 
     return m_Param;
@@ -60,13 +75,32 @@ void ParamWidget::initGUI()
         pWdg->setText(m_Param.getValue().toString());
         m_pEditorWidget = pWdg;
     }
-    else if (m_Param.getType() == QVariant::Type::Int)
+    else if (m_Param.getType() == QVariant::Type::UInt)
     {
         auto pWdg = new QSpinBox;
         pWdg->setValue(m_Param.getValue().toUInt());
         m_pEditorWidget = pWdg;
     }
+    else if (m_Param.getType() == QVariant::Type::List)
+    {
+        auto pWdg = new QLineEdit;
+//        pWdg->setInputMask("999.999.999.999");
 
+        QString Res;
+        auto List = m_Param.getValue().toList();
+        for (const auto& crVal : List)
+        {
+            auto sVal = crVal.toUInt();
+            if (0 < sVal && sVal < 10)
+                Res += "00" + QString::number(sVal);
+            else if (sVal < 100)
+                Res += "0" + QString::number(sVal);
+            else if (sVal < 1000)
+                Res += QString::number(sVal);
+        }
+        pWdg->setText(Res);
+        m_pEditorWidget = pWdg;
+    }
 
     auto pLayout = new QHBoxLayout{this};
 

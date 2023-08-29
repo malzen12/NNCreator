@@ -132,11 +132,11 @@ NNLayerParams NNLayerParams::makeEmbedding()
 NNLayerParams NNLayerParams::makeReshape()
 {
     auto strName = "Reshape";
-    std::vector<NNParam> vParams = {NNParam{"size array", "[1, 2, 3]", QVariant::Type::String}}; ///< @todo
+    std::vector<NNParam> vParams = {NNParam{"size", QList<QVariant>{}, QVariant::Type::List}}; ///< @todo
 
-    check_input_size_func fCheckInput = [](const std::vector<NNParam>& /*vParams*/, const std::vector<std::size_t>& /*vInputSize*/)
+    check_input_size_func fCheckInput = [](const std::vector<NNParam>& vParams, const std::vector<std::size_t>& /*vInputSize*/)
     {
-        return true;
+        return !vParams[0].getValue().toList().empty();
     };
 
     calc_output_size_func fCalcOutput = [](const std::vector<NNParam>& vParams, const std::vector<std::size_t>& /*vInputSize*/)

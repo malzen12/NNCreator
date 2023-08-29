@@ -3,7 +3,9 @@
 #include <QVBoxLayout>
 
 GlobalSettingsWidget::GlobalSettingsWidget()
-    : m_pInputSizeEdit{new QLineEdit},
+    : //m_pSavePathEdit{new QLineEdit},
+      //m_pConfirmPathButton{new QPushButton{"Confirm"}},
+      m_pInputSizeEdit{new QLineEdit},
       m_pConfirmSizeButton{new QPushButton{"Confirm"}},
       m_pMakeXmlButton{new QPushButton{"Make xml"}}
 {
@@ -31,10 +33,12 @@ void GlobalSettingsWidget::onUpdateInputSize()
 
 void GlobalSettingsWidget::initGUI()
 {
-    m_pInputSizeEdit->setInputMask("999.999.999.999");
+//    m_pInputSizeEdit->setInputMask("999.999.999.999");
 
     auto pLayout = new QVBoxLayout{this};
 
+//    pLayout->addWidget(m_pSavePathEdit);
+//    pLayout->addWidget(m_pConfirmPathButton);
     pLayout->addWidget(m_pInputSizeEdit);
     pLayout->addWidget(m_pConfirmSizeButton);
     pLayout->addWidget(m_pMakeXmlButton);

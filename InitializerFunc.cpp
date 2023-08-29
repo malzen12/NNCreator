@@ -10,8 +10,14 @@ InitializerFunc InitializerFunc::fromString(const QString& qstrName)
 {
     if ("Xavier" == qstrName)
         return InitializerFunc{initializer_func::xavier};
-    else if ("Xavier2" == qstrName)
-        return InitializerFunc{initializer_func::leaky_relu};
+    else if ("Uniform" == qstrName)
+        return InitializerFunc{initializer_func::uniform};
+    else if ("Normal" == qstrName)
+        return InitializerFunc{initializer_func::normal};
+    else if ("Dirac" == qstrName)
+        return InitializerFunc{initializer_func::dirac};
+    else if ("KaimingNormal" == qstrName)
+        return InitializerFunc{initializer_func::kaiming_normal};
     else
         throw std::string{"Invalid func name"};
 }
@@ -46,8 +52,14 @@ QString InitializerFunc::toString() const
 {
     if (initializer_func::xavier == m_Type)
         return "Xavier";
-    else if (initializer_func::leaky_relu == m_Type)
-        return "Xavier2";
+    else if (initializer_func::uniform == m_Type)
+        return "Uniform";
+    else if (initializer_func::normal == m_Type)
+        return "Normal";
+    else if (initializer_func::dirac == m_Type)
+        return "Dirac";
+    else if (initializer_func::kaiming_normal == m_Type)
+        return "KaimingNormal";
     else
         return "";
 }

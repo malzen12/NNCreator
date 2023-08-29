@@ -22,6 +22,9 @@ private:
     void initGUI();
     void createConnections();
 
+//    QLineEdit* m_pSavePathEdit;
+//    QPushButton* m_pConfirmPathButton;
+
     QLineEdit* m_pInputSizeEdit;
     QPushButton* m_pConfirmSizeButton;
 
