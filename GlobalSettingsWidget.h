@@ -3,6 +3,9 @@
 #include <QWidget>
 #include <QLineEdit>
 #include <QPushButton>
+#include <QGridLayout>
+
+#include "NNParam.h"
 
 class GlobalSettingsWidget: public QWidget
 {
@@ -13,23 +16,26 @@ public:
 
 signals:
     void inputSizeChanged(const std::vector<std::size_t>& );
-    void makeXml();
+    void makeNetXml(const std::vector<NNParam>& );
+    void makeTrainXml(const std::vector<NNParam>& );
 
 private slots:
     void onUpdateInputSize();
+    void onMakeNetXml();
+    void onMakeTrainXml();
 
 private:
     void initGUI();
     void createConnections();
 
-//    QLineEdit* m_pSavePathEdit;
-//    QPushButton* m_pConfirmPathButton;
+    std::vector<NNParam> collectParams(QGridLayout* pLayout);
+    NNParam collectInputSize();
 
-    QLineEdit* m_pInputSizeEdit;
     QPushButton* m_pConfirmSizeButton;
+    QGridLayout* m_pNetSettingsLayout;
+    QPushButton* m_pMakeNetXmlButton;
 
-    QPushButton* m_pMakeXmlButton;
-
-    std::vector<std::size_t> m_vInputSize;
+    QGridLayout* m_pTrainSettingsLayout;
+    QPushButton* m_pMakeTrainXmlButton;
 };
 

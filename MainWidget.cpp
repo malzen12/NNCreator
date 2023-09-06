@@ -11,6 +11,15 @@ MainWidget::MainWidget()
     createConnections();
 }
 
+void MainWidget::onMakeNetXml(const std::vector<NNParam>& vParams)
+{
+    return ;
+}
+
+void MainWidget::onMakeTrainXml(const std::vector<NNParam>& vParams)
+{
+    return ;
+}
 
 void MainWidget::initGUI()
 {
@@ -32,7 +41,9 @@ void MainWidget::createConnections()
     bRes &= static_cast<bool>(connect(m_pSettingsEdit, SIGNAL(paramsChanged(NNLayerParams)), m_pConstructorWidget, SLOT(onSetParams(NNLayerParams))));
     bRes &= static_cast<bool>(connect(m_pSettingsEdit, SIGNAL(deleteActive()), m_pConstructorWidget, SLOT(onDeleteActive())));
 
-    bRes &= static_cast<bool>(connect(m_pGlobalSettingsWidget, SIGNAL(makeXml()), m_pConstructorWidget, SLOT(onMakeXml())));
+    bRes &= static_cast<bool>(connect(m_pGlobalSettingsWidget, SIGNAL(makeNetXml(std::vector<NNParam>)), SLOT(onMakeNetXml(std::vector<NNParam>))));
+    bRes &= static_cast<bool>(connect(m_pGlobalSettingsWidget, SIGNAL(makeTrainXml(std::vector<NNParam>)), SLOT(onMakeTrainXml(std::vector<NNParam>))));
+
     bRes &= static_cast<bool>(connect(m_pGlobalSettingsWidget, SIGNAL(inputSizeChanged(std::vector<std::size_t>)), m_pConstructorWidget, SLOT(onSetInputSize(std::vector<std::size_t>))));
 
     assert(bRes);

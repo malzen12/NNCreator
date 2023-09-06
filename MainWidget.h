@@ -11,6 +11,10 @@ class MainWidget: public QWidget
 public:
     MainWidget();
 
+private slots:
+    void onMakeNetXml(const std::vector<NNParam>& vParams);
+    void onMakeTrainXml(const std::vector<NNParam>& vParams);
+
 private:
     void initGUI();
     void createConnections();
