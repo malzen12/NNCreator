@@ -59,11 +59,11 @@ void print_params(const NNParam& crParam, std::ofstream& rXml)
     rXml << "</" << crParam.getName() << ">" << std::endl;
 }
 
-void print_params(const NNLayerParams& crParams, std::ofstream& rXml)
+void print_params(const std::shared_ptr<NNLayerParams>& spParams, std::ofstream& rXml)
 {
-    print_params(crParams.getName(), "type", rXml);
+    print_params(spParams->getName(), "type", rXml);
 
-    for (const auto& crParam : crParams.getParams())
+    for (const auto& crParam : spParams->getParams())
         print_params(crParam, rXml);
 }
 
@@ -87,11 +87,11 @@ ConstructorWidget::ConstructorWidget()
     setMouseTracking(false);
 }
 
-void ConstructorWidget::onSetParams(const NNLayerParams& crParams)
+void ConstructorWidget::onSetParams(const std::shared_ptr<NNLayerParams>& spParams)
 {
     auto pLayerWidget = get_layer(m_sActive, m_vLayers);
 
-    pLayerWidget->setParams(crParams);
+    pLayerWidget->setParams(spParams);
 
     checkSizes();
 }
@@ -164,9 +164,9 @@ void ConstructorWidget::onSetOutputPath(const QString& qstrPath)
     m_strPath = qstrPath.toStdString();
 }
 
-void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams)
+void ConstructorWidget::onAddLayer(const QPoint& crPoint, const std::shared_ptr<NNLayerParams>& spParams)
 {
-    auto pLayer = new NNLayerWidget{get_increment(), crParams};
+    auto pLayer = new NNLayerWidget{get_increment(), spParams};
 
     pLayer->setParent(this);
     pLayer->move(crPoint);

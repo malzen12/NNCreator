@@ -15,10 +15,10 @@ public:
     ConstructorWidget();
 
 signals:
-    void paramsChanged(const NNLayerParams&);
+    void paramsChanged(const std::shared_ptr<NNLayerParams>&);
 
 public slots:
-    void onSetParams(const NNLayerParams& crParams);
+    void onSetParams(const std::shared_ptr<NNLayerParams>& spParams);
     void onDeleteActive();
 
     void onSetInputSize(const std::vector<std::size_t>& vInputSize);
@@ -27,7 +27,7 @@ public slots:
     void onSetOutputPath(const QString& qstrPath);
 
 private slots:
-    void onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams);
+    void onAddLayer(const QPoint& crPoint, const std::shared_ptr<NNLayerParams>& spParams);
     void onProcActions(QAction* /*pAction*/);
     void onChangeActive(std::size_t sId);
     void onMakeForward(std::size_t sId);

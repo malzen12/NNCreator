@@ -6,7 +6,6 @@
 #include <QPushButton>
 
 #include "NNLayerWidget.h"
-#include "ActivationFunc.h"
 
 class ParamsEditorWidget: public QWidget
 {
@@ -16,10 +15,10 @@ public:
     ParamsEditorWidget();
 
 public slots:
-    void onSetParams(const NNLayerParams& crParams);
+    void onSetParams(const std::shared_ptr<NNLayerParams>& spParams);
 
 signals:
-    void paramsChanged(const NNLayerParams& crParams);
+    void paramsChanged(const std::shared_ptr<NNLayerParams>& crParams);
     void deleteActive();
 
 private slots:
@@ -30,7 +29,7 @@ private:
     void createConnections();
 
     void initEditors();
-    const NNLayerParams& collectParams();
+    const std::shared_ptr<NNLayerParams>& collectParams();
 
 
     QLabel* m_pNameLabel;
@@ -40,5 +39,5 @@ private:
     QPushButton* m_pConfirm;
     QPushButton* m_pDelete;
 
-    NNLayerParams m_Params;
+    std::shared_ptr<NNLayerParams> m_spParams;
 };

@@ -5,7 +5,7 @@
 #include <QPushButton>
 #include <QGridLayout>
 
-#include "NNParam.h"
+#include "LayerParams/NNParam.h"
 
 class GlobalSettingsWidget: public QWidget
 {

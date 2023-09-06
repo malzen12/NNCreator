@@ -13,21 +13,21 @@ ParamsEditorWidget::ParamsEditorWidget()
     createConnections();
 }
 
-void ParamsEditorWidget::onSetParams(const NNLayerParams& crParams)
+void ParamsEditorWidget::onSetParams(const std::shared_ptr<NNLayerParams>& spParams)
 {
-    m_Params = crParams;
+    m_spParams = spParams;
     initEditors();
     update();
 }
 
 void ParamsEditorWidget::onConfirmParams()
 {
-    if (!m_Params.isValid())
+    if (!m_spParams->isValid())
         return ;
 
-    m_Params = collectParams();
+    m_spParams = collectParams();
 
-    emit paramsChanged(m_Params);
+    emit paramsChanged(m_spParams);
 }
 
 void ParamsEditorWidget::initGUI()
@@ -67,15 +67,15 @@ void ParamsEditorWidget::initEditors()
         m_pParamsLayout->removeWidget(pWdg);
     }
 
-    m_pNameLabel->setText(QString::fromStdString(m_Params.getName()));
+    m_pNameLabel->setText(QString::fromStdString(m_spParams->getName()));
 
-    for(const auto& crParam : m_Params.getParams())
+    for(const auto& spParam : m_spParams->getParams())
     {
-        m_pParamsLayout->addWidget(new ParamWidget{crParam});
+        m_pParamsLayout->addWidget(new ParamWidget{spParam});
     }
 }
 
-const NNLayerParams& ParamsEditorWidget::collectParams()
+const std::shared_ptr<NNLayerParams>& ParamsEditorWidget::collectParams()
 {
     std::vector<NNParam> vParams;
 
@@ -86,6 +86,6 @@ const NNLayerParams& ParamsEditorWidget::collectParams()
             vParams.push_back(pWdg->collectValue());
     }
 
-    m_Params.setParams(vParams);
-    return m_Params;
+    m_spParams->setParams(vParams);
+    return m_spParams;
 }

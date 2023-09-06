@@ -6,8 +6,8 @@
 #include <QLineEdit>
 #include <QDoubleSpinBox>
 
-#include "ActivationFunc.h"
-#include "InitializerFunc.h"
+#include "LayerParams/ActivationFunc.h"
+#include "LayerParams/InitializerFunc.h"
 
 QStringList get_enum_names(const NNParam& crParam)
 {

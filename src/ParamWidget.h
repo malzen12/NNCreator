@@ -3,7 +3,7 @@
 #include <QWidget>
 #include <QLabel>
 
-#include "NNParam.h"
+#include "LayerParams/NNParam.h"
 
 class ParamWidget : public QWidget
 {

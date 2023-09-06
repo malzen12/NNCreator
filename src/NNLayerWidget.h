@@ -2,19 +2,19 @@
 
 #include <QLabel>
 
-#include "NNLayerParams.h"
+#include "LayerParams/NNLayerParams.h"
 
 class NNLayerWidget: public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit NNLayerWidget(std::size_t sId, const NNLayerParams& crParams);
+    explicit NNLayerWidget(std::size_t sId, const std::shared_ptr<NNLayerParams>& spParams);
 
     std::size_t getId() const;
 
-    void setParams(const NNLayerParams& crParams) noexcept;
-    const NNLayerParams& getParams() const noexcept;
+    void setParams(const std::shared_ptr<NNLayerParams>& spParams) noexcept;
+    const std::shared_ptr<NNLayerParams>& getParams() const noexcept;
 
     void deleteLayer();
 
@@ -49,7 +49,7 @@ private:
 
     bool m_bActive;
 
-    NNLayerParams m_Params;
+    std::shared_ptr<NNLayerParams> m_spParams;
 
     std::vector<std::size_t> m_vInputSize;
     bool m_bValidParams;

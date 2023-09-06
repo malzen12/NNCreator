@@ -26,13 +26,13 @@ QString make_size_string(const std::vector<std::size_t>& vSize)
     return qstrRes;
 }
 
-NNLayerWidget::NNLayerWidget(std::size_t sId, const NNLayerParams& crParams)
+NNLayerWidget::NNLayerWidget(std::size_t sId, const std::shared_ptr<NNLayerParams>& spParams)
     : m_sId{sId},
       m_bGrabbed{false},
-      m_Params{crParams},
+      m_spParams{spParams},
       m_bValidParams{true},
       m_pInputLabel{new QLabel{make_size_string(m_vInputSize)}},
-      m_pNameLabel{new QLabel{QString::fromStdString(m_Params.getName())}},
+      m_pNameLabel{new QLabel{QString::fromStdString(m_spParams->getName())}},
       m_pOutputLabel{new QLabel{make_size_string({})}}
 {
     setAttribute(Qt::WA_DeleteOnClose);
@@ -45,14 +45,14 @@ std::size_t NNLayerWidget::getId() const
     return m_sId;
 }
 
-void NNLayerWidget::setParams(const NNLayerParams& crParams) noexcept
+void NNLayerWidget::setParams(const std::shared_ptr<NNLayerParams>& spParams) noexcept
 {
-    m_Params = crParams;
+    m_spParams = spParams;
 }
 
-const NNLayerParams& NNLayerWidget::getParams() const noexcept
+const std::shared_ptr<NNLayerParams>& NNLayerWidget::getParams() const noexcept
 {
-    return m_Params;
+    return m_spParams;
 }
 
 void NNLayerWidget::deleteLayer()
@@ -134,11 +134,11 @@ void NNLayerWidget::addInputSize(const std::vector<std::size_t>& vInputSize) ///
     }
     else
     {
-        m_bValidParams = m_Params.checkInputSize(vInputSize);
+        m_bValidParams = m_spParams->checkInputSize(vInputSize);
 
-        if (m_Params.getName() == "Concatinate" && m_bValidParams && !m_vInputSize.empty())
+        if (m_spParams->getName() == "Concatinate" && m_bValidParams && !m_vInputSize.empty())
         {
-            auto sAxis = m_Params.getParams()[0].getValue().toUInt();
+            auto sAxis = m_spParams->getParams()[0].getValue().toUInt();
             m_vInputSize[sAxis] += vInputSize[sAxis];
         }
         else
@@ -153,7 +153,7 @@ std::vector<std::size_t> NNLayerWidget::calcOutputSize() const
     if (m_vInputSize.empty())
         return {};
 
-    return m_Params.calcOutputSize(m_vInputSize);
+    return m_spParams->calcOutputSize(m_vInputSize);
 }
 
 void NNLayerWidget::initGUI()

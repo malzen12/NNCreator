@@ -36,9 +36,9 @@ void MainWidget::createConnections()
 {
     auto bRes = true;
 
-    bRes &= static_cast<bool>(connect(m_pConstructorWidget, SIGNAL(paramsChanged(NNLayerParams)), m_pSettingsEdit, SLOT(onSetParams(NNLayerParams))));
+    bRes &= static_cast<bool>(connect(m_pConstructorWidget, SIGNAL(paramsChanged(std::shared_ptr<NNLayerParams>)), m_pSettingsEdit, SLOT(onSetParams(std::shared_ptr<NNLayerParams>))));
 
-    bRes &= static_cast<bool>(connect(m_pSettingsEdit, SIGNAL(paramsChanged(NNLayerParams)), m_pConstructorWidget, SLOT(onSetParams(NNLayerParams))));
+    bRes &= static_cast<bool>(connect(m_pSettingsEdit, SIGNAL(paramsChanged(std::shared_ptr<NNLayerParams>)), m_pConstructorWidget, SLOT(onSetParams(std::shared_ptr<NNLayerParams>))));
     bRes &= static_cast<bool>(connect(m_pSettingsEdit, SIGNAL(deleteActive()), m_pConstructorWidget, SLOT(onDeleteActive())));
 
     bRes &= static_cast<bool>(connect(m_pGlobalSettingsWidget, SIGNAL(makeNetXml(std::vector<NNParam>)), SLOT(onMakeNetXml(std::vector<NNParam>))));
