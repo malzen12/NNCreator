@@ -7,11 +7,9 @@
 
 enum class enu_scheduler
 {
-    relu = 0,
-    leaky_relu,
-    sigmoid,
-    tanh,
-    selu,
+    linear = 0,
+    exponential,
+    multistep,
     cnt
 };
 

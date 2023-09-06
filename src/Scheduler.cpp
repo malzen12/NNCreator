@@ -8,16 +8,12 @@ Scheduler::Scheduler(enu_scheduler Type)
 
 Scheduler Scheduler::fromString(const QString& qstrName)
 {
-    if ("Relu" == qstrName)
-        return Scheduler{enu_scheduler::relu};
-    else if ("LeakyRelu" == qstrName)
-        return Scheduler{enu_scheduler::leaky_relu};
-    else if ("Sigmoid" == qstrName)
-        return Scheduler{enu_scheduler::sigmoid};
-    else if ("Tanh" == qstrName)
-        return Scheduler{enu_scheduler::tanh};
-    else if ("Selu" == qstrName)
-        return Scheduler{enu_scheduler::selu};
+    if ("Linear" == qstrName)
+        return Scheduler{enu_scheduler::linear};
+    else if ("Exponential" == qstrName)
+        return Scheduler{enu_scheduler::exponential};
+    else if ("MultiStep" == qstrName)
+        return Scheduler{enu_scheduler::multistep};
     else
         throw std::string{"Invalid func name"};
 }
@@ -45,21 +41,17 @@ std::vector<enu_scheduler> Scheduler::getAllValues()
 
 std::string Scheduler::getClassName()
 {
-    return "Otimizer";
+    return "Scheduler";
 }
 
 QString Scheduler::toString() const
 {
-    if (enu_scheduler::relu == m_Type)
-        return "Relu";
-    else if (enu_scheduler::leaky_relu == m_Type)
-        return "LeakyRelu";
-    if (enu_scheduler::sigmoid == m_Type)
-        return "Sigmoid";
-    else if (enu_scheduler::tanh == m_Type)
-        return "Tanh";
-    if (enu_scheduler::selu == m_Type)
-        return "Selu";
+    if (enu_scheduler::linear == m_Type)
+        return "Linear";
+    else if (enu_scheduler::exponential == m_Type)
+        return "Exponential";
+    if (enu_scheduler::multistep == m_Type)
+        return "MultiStep";
     else
-        return "";
+        return "Linear";
 }

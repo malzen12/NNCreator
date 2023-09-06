@@ -7,11 +7,9 @@
 
 enum class optimizer
 {
-    relu = 0,
-    leaky_relu,
-    sigmoid,
-    tanh,
-    selu,
+    adam = 0,
+    adam_w,
+    sgd,
     cnt
 };
 
