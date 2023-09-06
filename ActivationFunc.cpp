@@ -45,7 +45,7 @@ std::vector<activation_func> ActivationFunc::getAllValues()
 
 std::string ActivationFunc::getClassName()
 {
-    return "Activation function";
+    return "Activation_function";
 }
 
 QString ActivationFunc::toString() const

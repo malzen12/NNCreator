@@ -16,8 +16,8 @@ NNLayerParams NNLayerParams::makeLinear()
 {
     auto strName = "Linear";
 
-    std::vector<NNParam> vParams = {NNParam{"input size", 0},
-                                    NNParam{"output size", 0},
+    std::vector<NNParam> vParams = {NNParam{"input_size", 0},
+                                    NNParam{"output_size", 0},
                                     NNParam{InitializerFunc::getClassName(),
                                             InitializerFunc{static_cast<initializer_func>(0)}.toString(),
                                             QVariant::Type::String, true}};
@@ -40,9 +40,9 @@ NNLayerParams NNLayerParams::makeLinear()
 NNLayerParams NNLayerParams::makeConv1d()
 {
     auto strName = "Conv1d";
-    std::vector<NNParam> vParams = {NNParam{"in depth", 0},
-                                    NNParam{"out depth", 0},
-                                    NNParam{"kernel size", 0},
+    std::vector<NNParam> vParams = {NNParam{"in_depth", 0},
+                                    NNParam{"out_depth", 0},
+                                    NNParam{"kernel_size", 0},
                                     NNParam{"stride", 1},
                                     NNParam{"padding", 0},
                                     NNParam{"dilitation", 1},
@@ -84,7 +84,7 @@ NNLayerParams NNLayerParams::makeConv1d()
 NNLayerParams NNLayerParams::makePool()
 {
     auto strName = "Pool";
-    std::vector<NNParam> vParams = {NNParam{"kernel size", 0}, NNParam{"stride", 1}, NNParam{"padding", 0}, NNParam{"dilitation", 1}};
+    std::vector<NNParam> vParams = {NNParam{"kernel_size", 0}, NNParam{"stride", 1}, NNParam{"padding", 0}, NNParam{"dilitation", 1}};
 
     check_input_size_func fCheckInput = [](const std::vector<NNParam>& vParams, const std::vector<std::size_t>& vInputSize)
     {
@@ -112,7 +112,7 @@ NNLayerParams NNLayerParams::makePool()
 NNLayerParams NNLayerParams::makeEmbedding()
 {
     auto strName = "Embedding";
-    std::vector<NNParam> vParams = {NNParam{"vocab size", 0}, NNParam{"embedding size", 0}};
+    std::vector<NNParam> vParams = {NNParam{"vocab_size", 0}, NNParam{"embedding_size", 0}};
     check_input_size_func fCheckInput = [](const std::vector<NNParam>& /*vParams*/, const std::vector<std::size_t>& /*vInputSize*/)
     {
         return true;
@@ -158,7 +158,7 @@ NNLayerParams NNLayerParams::makeReshape()
 NNLayerParams NNLayerParams::makeNormalization()
 {
     auto strName = "Normalization";
-    std::vector<NNParam> vParams = {NNParam{"strange param", 0}};
+    std::vector<NNParam> vParams = {NNParam{"strange_param", 0}};
 
     check_input_size_func fCheckInput = [](const std::vector<NNParam>& /*vParams*/, const std::vector<std::size_t>& /*vInputSize*/)
     {

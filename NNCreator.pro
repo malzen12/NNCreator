@@ -13,8 +13,10 @@ SOURCES += \
     NNLayerParams.cpp \
     NNLayerWidget.cpp \
     NNParam.cpp \
+    Optimizer.cpp \
     ParamWidget.cpp \
     ParamsEditorWidget.cpp \
+    Scheduler.cpp \
     main.cpp
 
 HEADERS += \
@@ -26,5 +28,7 @@ HEADERS += \
     NNLayerParams.h \
     NNLayerWidget.h \
     NNParam.h \
+    Optimizer.h \
     ParamWidget.h \
-    ParamsEditorWidget.h
+    ParamsEditorWidget.h \
+    Scheduler.h

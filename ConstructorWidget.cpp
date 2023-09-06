@@ -3,6 +3,7 @@
 #include <iostream>
 #include <fstream>
 #include <queue>
+#include <set>
 
 #include <QMouseEvent>
 #include <QPaintEvent>
@@ -66,8 +67,7 @@ void print_params(const NNLayerParams& crParams, std::ofstream& rXml)
         print_params(crParam, rXml);
 }
 
-template<typename t_Param>
-void print_params(const std::vector<t_Param>& vParams, const std::string& strTag, std::ofstream& rXml)
+void print_params(const std::vector<std::size_t>& vParams, const std::string& strTag, std::ofstream& rXml)
 {
     rXml << "<" << strTag << ">" << std::endl;
 
@@ -132,7 +132,7 @@ void ConstructorWidget::onMakeXml()
     auto pStart = findStart();
 
     std::ofstream Xml;
-    Xml.open("Xmls/Current.xml");
+    Xml.open(m_strPath);
 
     ///< @todo replace cout to fout
     Xml << "<?xml version=\"1.0\"?>" << std::endl;
@@ -145,12 +145,23 @@ void ConstructorWidget::onMakeXml()
         Xml << "<l>" << std::endl;
         print_params(pCurrent->getId(), "id", Xml);
         print_params(pCurrent->getParams(), Xml);
+
+        Xml << "<forwards>" << std::endl;
+        for (auto pLayer : pCurrent->getForward())
+            print_params(pLayer->getId(), "v", Xml);
+        Xml << "</forwards>" << std::endl;
+
         Xml << "</l>" << std::endl;
-    });
+    }, {});
     Xml << "</layers>" << std::endl;
     Xml << "</data>" << std::endl;
 
     Xml.close();
+}
+
+void ConstructorWidget::onSetOutputPath(const QString& qstrPath)
+{
+    m_strPath = qstrPath.toStdString();
 }
 
 void ConstructorWidget::onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams)
@@ -315,7 +326,7 @@ void ConstructorWidget::checkSizes()
 
     pStart->addInputSize(m_vInputSize);
 
-    bfs(pStart, [](NNLayerWidget* pCurrent, NNLayerWidget* pNext)
+    bfs(pStart, {}, [](NNLayerWidget* pCurrent, NNLayerWidget* pNext)
     {
         if (pNext)
             pNext->addInputSize(pCurrent->calcOutputSize());
@@ -338,26 +349,34 @@ NNLayerWidget* ConstructorWidget::findStart()
     throw std::runtime_error("circular dependensis");
 }
 
-void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fProc)
+void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc)
 {
+    std::set<NNLayerWidget*> VisitedSet;
+
     std::queue<NNLayerWidget*> qToVisit;
     qToVisit.push(pStart);
+
+    VisitedSet.insert(pStart);
 
     while (!qToVisit.empty())
     {
         auto pCurrent = qToVisit.front();
         qToVisit.pop();
 
-        if (pCurrent->getForward().empty())
-            fProc(pCurrent, nullptr);
-        else
-        {
-            for (auto pNext : pCurrent->getForward())
-            {
-                fProc(pCurrent, pNext);
+        if (fCurrentProc)
+            fCurrentProc(pCurrent, nullptr);
 
-                qToVisit.push(pNext);
-            }
+        for (auto pNext : pCurrent->getForward())
+        {
+            if (VisitedSet.count(pNext))
+                continue;
+
+            VisitedSet.insert(pNext);
+
+            if (fForwardsProc)
+                fForwardsProc(pCurrent, pNext);
+
+            qToVisit.push(pNext);
         }
     }
 }

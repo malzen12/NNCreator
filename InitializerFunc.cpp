@@ -45,7 +45,7 @@ std::vector<initializer_func> InitializerFunc::getAllValues()
 
 std::string InitializerFunc::getClassName()
 {
-    return "Initializer function";
+    return "Initializer_function";
 }
 
 QString InitializerFunc::toString() const

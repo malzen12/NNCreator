@@ -11,6 +11,8 @@ class ParamWidget : public QWidget
 public:
     explicit ParamWidget(const NNParam& crParam);
 
+    const std::string& getName() const noexcept;
+
     const NNParam& collectValue();
 
 private:

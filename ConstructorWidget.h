@@ -24,6 +24,8 @@ public slots:
     void onSetInputSize(const std::vector<std::size_t>& vInputSize);
     void onMakeXml();
 
+    void onSetOutputPath(const QString& qstrPath);
+
 private slots:
     void onAddLayer(const QPoint& crPoint, const NNLayerParams& crParams);
     void onProcActions(QAction* /*pAction*/);
@@ -43,9 +45,11 @@ private:
     void checkSizes();
     NNLayerWidget* findStart();
 
-    void bfs(NNLayerWidget* pStart, bfs_proc fProc);
+    void bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc);
 
 private:
+    std::string m_strPath;
+
     QMenu* m_pMenu;
     std::vector<NNLayerWidget*> m_vLayers;
 

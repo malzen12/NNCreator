@@ -4,6 +4,7 @@
 #include <QComboBox>
 #include <QSpinBox>
 #include <QLineEdit>
+#include <QDoubleSpinBox>
 
 #include "ActivationFunc.h"
 #include "InitializerFunc.h"
@@ -28,6 +29,11 @@ ParamWidget::ParamWidget(const NNParam& crParam)
     initGUI();
 }
 
+const std::string& ParamWidget::getName() const noexcept
+{
+    return m_Param.getName();
+}
+
 const NNParam& ParamWidget::collectValue()
 {
     if (m_Param.isEnum())
@@ -41,6 +47,10 @@ const NNParam& ParamWidget::collectValue()
     else if (m_Param.getType() == QVariant::Type::UInt)
     {
         m_Param.setValue(static_cast<QSpinBox*>(m_pEditorWidget)->value());
+    }
+    else if (m_Param.getType() == QVariant::Type::Double)
+    {
+        m_Param.setValue(static_cast<QDoubleSpinBox*>(m_pEditorWidget)->value());
     }
     else if (m_Param.getType() == QVariant::Type::List)
     {
@@ -78,7 +88,17 @@ void ParamWidget::initGUI()
     else if (m_Param.getType() == QVariant::Type::UInt)
     {
         auto pWdg = new QSpinBox;
+        pWdg->setMaximum(5000);
         pWdg->setValue(m_Param.getValue().toUInt());
+        m_pEditorWidget = pWdg;
+    }
+    else if (m_Param.getType() == QVariant::Type::Double)
+    {
+        auto pWdg = new QDoubleSpinBox;
+        pWdg->setDecimals(3);
+        pWdg->setRange(0.0001, 2);
+        pWdg->setSingleStep(0.001);
+        pWdg->setValue(m_Param.getValue().toDouble());
         m_pEditorWidget = pWdg;
     }
     else if (m_Param.getType() == QVariant::Type::List)
