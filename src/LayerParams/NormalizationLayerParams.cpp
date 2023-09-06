@@ -16,7 +16,3 @@ std::vector<std::size_t> NormalizationLayerParams::calcOutputSize(const std::vec
     return vInputSize;
 }
 
-std::string NormalizationLayerParams::makeXmlString() const
-{
-    return "";
-}

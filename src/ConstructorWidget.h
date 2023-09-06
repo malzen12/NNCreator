@@ -14,6 +14,8 @@ class ConstructorWidget: public QWidget
 public:
     ConstructorWidget();
 
+    std::string makeXmlString();
+
 signals:
     void paramsChanged(const std::shared_ptr<NNLayerParams>&);
 
@@ -22,7 +24,6 @@ public slots:
     void onDeleteActive();
 
     void onSetInputSize(const std::vector<std::size_t>& vInputSize);
-    void onMakeXml();
 
     void onSetOutputPath(const QString& qstrPath);
 

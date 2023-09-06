@@ -34,7 +34,7 @@ public:
     virtual bool checkInputSize(const std::vector<std::size_t>& vInputSize) const = 0;
     virtual std::vector<std::size_t> calcOutputSize(const std::vector<std::size_t>& vInputSize) const = 0;
 
-    virtual std::string makeXmlString() const = 0;
+    std::string makeXmlString() const;
 
 protected:
     std::string m_strName;

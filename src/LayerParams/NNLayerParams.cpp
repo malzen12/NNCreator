@@ -1,5 +1,7 @@
 #include "NNLayerParams.h"
 
+#include <sstream>
+
 #include "ActivationFunc.h"
 #include "InitializerFunc.h"
 
@@ -122,4 +124,16 @@ void NNLayerParams::setParams(const std::vector<NNParam>& vParams) noexcept
 bool NNLayerParams::isValid() const noexcept
 {
     return !m_vParams.empty();
+}
+
+std::string NNLayerParams::makeXmlString() const
+{
+    std::stringstream Stream;
+
+    Stream << "<type>" << m_strName << "</type>" << std::endl;
+
+    for (const auto& spParams : m_vParams)
+        Stream << spParams.makeXmlString();
+
+    return Stream.str();
 }

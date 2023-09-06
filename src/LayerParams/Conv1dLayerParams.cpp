@@ -33,8 +33,3 @@ std::vector<std::size_t> Conv1dLayerParams::calcOutputSize(const std::vector<std
 
     return vRes;
 }
-
-std::string Conv1dLayerParams::makeXmlString() const
-{
-    return "";
-}

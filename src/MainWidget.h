@@ -12,12 +12,14 @@ public:
     MainWidget();
 
 private slots:
-    void onMakeNetXml(const std::vector<NNParam>& vParams);
-    void onMakeTrainXml(const std::vector<NNParam>& vParams);
+    void onWriteNetXml(const std::vector<NNParam>& vParams) const;
+    void onWriteTrainXml(const std::vector<NNParam>& vParams) const;
 
 private:
     void initGUI();
     void createConnections();
+
+    void writeXml(const std::string& strXmlPath, const std::string& strXmlBody) const;
 
     GlobalSettingsWidget* m_pGlobalSettingsWidget;
     ConstructorWidget* m_pConstructorWidget;

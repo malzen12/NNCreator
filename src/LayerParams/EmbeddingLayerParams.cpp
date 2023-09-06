@@ -19,7 +19,3 @@ std::vector<std::size_t> EmbeddingLayerParams::calcOutputSize(const std::vector<
     return vRes;
 }
 
-std::string EmbeddingLayerParams::makeXmlString() const
-{
-    return "";
-}

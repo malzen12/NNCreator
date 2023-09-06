@@ -1,5 +1,7 @@
 #include "NNParam.h"
 
+#include <sstream>
+
 NNParam::NNParam(const std::string& strName, const QVariant& crValue, QVariant::Type Type, bool bEnum)
     : m_strName{strName},
       m_Value(crValue),
@@ -36,5 +38,23 @@ void NNParam::setValue(const QVariant& crValue)
 
 std::string NNParam::makeXmlString() const
 {
+    std::stringstream Stream;
+    Stream << "<" << m_strName << ">";
 
+    if (m_Type == QVariant::Type::String)
+        Stream << m_Value.toString().toStdString();
+    else if (m_Type == QVariant::Type::UInt)
+        Stream << m_Value.toUInt();
+    else if (m_Type == QVariant::Type::List)
+    {
+        auto lVal = m_Value.toList();
+        for (const auto& crVal : lVal)
+            Stream << "<v>" << crVal.toUInt() << "</v>";
+
+    }
+    else
+        Stream << m_Value.toString().toStdString();
+
+    Stream << "</" << m_strName << ">" << std::endl;
+    return Stream.str();
 }

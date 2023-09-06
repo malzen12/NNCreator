@@ -1,7 +1,6 @@
 #include "ConstructorWidget.h"
 
-#include <iostream>
-#include <fstream>
+#include <sstream>
 #include <queue>
 #include <set>
 
@@ -28,53 +27,24 @@ NNLayerWidget* get_layer(std::size_t sId, std::vector<NNLayerWidget*> vLayers)
     return *itLayer;
 }
 
-void print_params(const std::string& strParam, const std::string& strTag, std::ofstream& rXml)
+void print_params(const std::string& strParam, const std::string& strTag, std::stringstream& rStream)
 {
-    rXml << "<" << strTag << ">" << strParam << "</" << strTag << ">" << std::endl;
+    rStream << "<" << strTag << ">" << strParam << "</" << strTag << ">" << std::endl;
 }
 
-void print_params(std::size_t sParam, const std::string& strTag, std::ofstream& rXml)
+void print_params(std::size_t sParam, const std::string& strTag, std::stringstream& rStream)
 {
-    rXml << "<" << strTag << ">" << sParam << "</" << strTag << ">" << std::endl;
+    rStream << "<" << strTag << ">" << sParam << "</" << strTag << ">" << std::endl;
 }
 
-void print_params(const NNParam& crParam, std::ofstream& rXml)
+void print_params(const std::vector<std::size_t>& vParams, const std::string& strTag, std::stringstream& rStream)
 {
-    rXml << "<" << crParam.getName() << ">";
-
-    if (crParam.getType() == QVariant::Type::String)
-        rXml << crParam.getValue().toString().toStdString();
-    else if (crParam.getType() == QVariant::Type::UInt)
-        rXml << crParam.getValue().toUInt();
-    else if (crParam.getType() == QVariant::Type::List)
-    {
-        auto lVal = crParam.getValue().toList();
-        for (const auto& crVal : lVal)
-            rXml << "<v>" << crVal.toUInt() << "</v>";
-
-    }
-    else
-        rXml << crParam.getValue().toString().toStdString();
-
-    rXml << "</" << crParam.getName() << ">" << std::endl;
-}
-
-void print_params(const std::shared_ptr<NNLayerParams>& spParams, std::ofstream& rXml)
-{
-    print_params(spParams->getName(), "type", rXml);
-
-    for (const auto& crParam : spParams->getParams())
-        print_params(crParam, rXml);
-}
-
-void print_params(const std::vector<std::size_t>& vParams, const std::string& strTag, std::ofstream& rXml)
-{
-    rXml << "<" << strTag << ">" << std::endl;
+    rStream << "<" << strTag << ">" << std::endl;
 
     for (const auto& crParam : vParams)
-        print_params(crParam, "v", rXml);
+        print_params(crParam, "v", rStream);
 
-    rXml << "</" << strTag << ">" << std::endl;
+    rStream << "</" << strTag << ">" << std::endl;
 }
 
 ConstructorWidget::ConstructorWidget()
@@ -85,6 +55,34 @@ ConstructorWidget::ConstructorWidget()
     createConnections();
 
     setMouseTracking(false);
+}
+
+std::string ConstructorWidget::makeXmlString()
+{
+    auto pStart = findStart();
+
+    std::stringstream Stream;
+
+    print_params(m_vInputSize, "data_size", Stream);
+
+    Stream << "<layers>" << std::endl;
+    bfs(pStart, [&Stream](NNLayerWidget* pCurrent, NNLayerWidget* /*pNext*/)
+    {
+        Stream << "<l>" << std::endl;
+        print_params(pCurrent->getId(), "id", Stream);
+
+        Stream << pCurrent->getParams()->makeXmlString();
+
+        Stream << "<forwards>" << std::endl;
+        for (auto pLayer : pCurrent->getForward())
+            print_params(pLayer->getId(), "v", Stream);
+        Stream << "</forwards>" << std::endl;
+
+        Stream << "</l>" << std::endl;
+    }, {});
+    Stream << "</layers>" << std::endl;
+
+    return Stream.str();
 }
 
 void ConstructorWidget::onSetParams(const std::shared_ptr<NNLayerParams>& spParams)
@@ -125,38 +123,6 @@ void ConstructorWidget::onDeleteActive()
 void ConstructorWidget::onSetInputSize(const std::vector<std::size_t>& vInputSize)
 {
     m_vInputSize = vInputSize;
-}
-
-void ConstructorWidget::onMakeXml()
-{
-    auto pStart = findStart();
-
-    std::ofstream Xml;
-    Xml.open(m_strPath);
-
-    ///< @todo replace cout to fout
-    Xml << "<?xml version=\"1.0\"?>" << std::endl;
-    Xml << "<data>" << std::endl;
-    print_params(m_vInputSize, "data_size", Xml);
-
-    Xml << "<layers>" << std::endl;
-    bfs(pStart, [&Xml](NNLayerWidget* pCurrent, NNLayerWidget* /*pNext*/)
-    {
-        Xml << "<l>" << std::endl;
-        print_params(pCurrent->getId(), "id", Xml);
-        print_params(pCurrent->getParams(), Xml);
-
-        Xml << "<forwards>" << std::endl;
-        for (auto pLayer : pCurrent->getForward())
-            print_params(pLayer->getId(), "v", Xml);
-        Xml << "</forwards>" << std::endl;
-
-        Xml << "</l>" << std::endl;
-    }, {});
-    Xml << "</layers>" << std::endl;
-    Xml << "</data>" << std::endl;
-
-    Xml.close();
 }
 
 void ConstructorWidget::onSetOutputPath(const QString& qstrPath)

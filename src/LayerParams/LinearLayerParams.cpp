@@ -18,7 +18,3 @@ std::vector<std::size_t> LinearLayerParams::calcOutputSize(const std::vector<std
     return vRes;
 }
 
-std::string LinearLayerParams::makeXmlString() const
-{
-    return "";
-}

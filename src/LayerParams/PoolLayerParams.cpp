@@ -27,8 +27,3 @@ std::vector<std::size_t> PoolLayerParams::calcOutputSize(const std::vector<std::
 
     return vRes;
 }
-
-std::string PoolLayerParams::makeXmlString() const
-{
-    return "";
-}

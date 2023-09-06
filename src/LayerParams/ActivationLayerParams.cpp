@@ -15,8 +15,3 @@ std::vector<std::size_t> ActivationLayerParams::calcOutputSize(const std::vector
 {
     return vInputSize;
 }
-
-std::string ActivationLayerParams::makeXmlString() const
-{
-    return "";
-}

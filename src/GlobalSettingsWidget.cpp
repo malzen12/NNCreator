@@ -41,7 +41,7 @@ void GlobalSettingsWidget::onMakeNetXml()
 
 void GlobalSettingsWidget::onMakeTrainXml()
 {
-    emit makeNetXml(collectParams(m_pTrainSettingsLayout));
+    emit makeTrainXml(collectParams(m_pTrainSettingsLayout));
 }
 
 void GlobalSettingsWidget::initGUI()
@@ -49,17 +49,17 @@ void GlobalSettingsWidget::initGUI()
     m_pTrainSettingsLayout = new QGridLayout;
 
     m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Optimizer", "Optimizer", QVariant::Type::String, true}}, 0, 0, 1, 3);
-    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Optimizer speed", 0.001, QVariant::Type::Double}}, 1, 0, 1, 3);
-    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Epoch cnt", 100}}, 2, 0, 1, 3);
+    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Optimizer_speed", 0.001, QVariant::Type::Double}}, 1, 0, 1, 3);
+    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Epoch_cnt", 100}}, 2, 0, 1, 3);
     m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Regularizator", 100}}, 3, 0, 1, 3);
     m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Scheduler", "Scheduler", QVariant::Type::String, true}}, 4, 0, 1, 3);
-    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Train Xml path", "Xmls\\TestNN.xml", QVariant::Type::String}}, 5, 0, 1, 3);
+    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Train Xml path", "Xmls\\TestTrain.xml", QVariant::Type::String}}, 5, 0, 1, 3);
     m_pTrainSettingsLayout->addWidget(m_pMakeTrainXmlButton, 6, 0, 1, 3);
 
     m_pNetSettingsLayout->addWidget(new ParamWidget{NNParam{"Input size", {}, QVariant::Type::List}}, 0, 0, 1, 2);
     m_pNetSettingsLayout->addWidget(m_pConfirmSizeButton, 0, 2);
     m_pNetSettingsLayout->addWidget(new ParamWidget{NNParam{"NN Xml path", "Xmls\\TestNN.xml", QVariant::Type::String}}, 1, 0, 1, 3);
-    m_pNetSettingsLayout->addWidget(m_pMakeNetXmlButton, 1, 0, 1, 3);
+    m_pNetSettingsLayout->addWidget(m_pMakeNetXmlButton, 2, 0, 1, 3);
 
     auto pMainLayout = new QVBoxLayout{this};
     pMainLayout->addLayout(m_pTrainSettingsLayout);
@@ -85,7 +85,7 @@ std::vector<NNParam> GlobalSettingsWidget::collectParams(QGridLayout* pLayout)
 
     for (auto i = 0; i < pLayout->count(); ++i)
     {
-        auto pWdg = static_cast<ParamWidget*>(pLayout->itemAt(i)->widget());
+        auto pWdg = dynamic_cast<ParamWidget*>(pLayout->itemAt(i)->widget());
         if (pWdg)
             vParams.push_back(pWdg->collectValue());
     }
@@ -97,8 +97,8 @@ NNParam GlobalSettingsWidget::collectInputSize()
 {
     for (auto i = 0; i < m_pNetSettingsLayout->count(); ++i)
     {
-        auto pWdg = static_cast<ParamWidget*>(m_pNetSettingsLayout->itemAt(i)->widget());
-        if ("Input size" == pWdg->getName())
+        auto pWdg = dynamic_cast<ParamWidget*>(m_pNetSettingsLayout->itemAt(i)->widget());
+        if (pWdg && "Input size" == pWdg->getName())
             return pWdg->collectValue();
     }
     assert(false);

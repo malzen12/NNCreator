@@ -16,8 +16,3 @@ std::vector<std::size_t> ConcatinateLayerParams::calcOutputSize(const std::vecto
 {
     return vInputSize;
 }
-
-std::string ConcatinateLayerParams::makeXmlString() const
-{
-    return "";
-}
