@@ -14,6 +14,8 @@ public:
 
     void setValue(const QVariant& crValue);
 
+    std::string makeXmlString() const;
+
 private:
     std::string m_strName;
     QVariant m_Value;

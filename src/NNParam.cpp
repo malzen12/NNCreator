@@ -33,3 +33,8 @@ void NNParam::setValue(const QVariant& crValue)
 {
     m_Value = crValue;
 }
+
+std::string NNParam::makeXmlString() const
+{
+
+}

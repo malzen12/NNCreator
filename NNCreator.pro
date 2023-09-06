@@ -5,30 +5,30 @@ QT += widgets
 CONFIG += c++17
 
 SOURCES += \
-    ActivationFunc.cpp \
-    ConstructorWidget.cpp \
-    GlobalSettingsWidget.cpp \
-    InitializerFunc.cpp \
-    MainWidget.cpp \
-    NNLayerParams.cpp \
-    NNLayerWidget.cpp \
-    NNParam.cpp \
-    Optimizer.cpp \
-    ParamWidget.cpp \
-    ParamsEditorWidget.cpp \
-    Scheduler.cpp \
-    main.cpp
+    $$PWD/src/ActivationFunc.cpp \
+    $$PWD/src/ConstructorWidget.cpp \
+    $$PWD/src/GlobalSettingsWidget.cpp \
+    $$PWD/src/InitializerFunc.cpp \
+    $$PWD/src/MainWidget.cpp \
+    $$PWD/src/NNLayerParams.cpp \
+    $$PWD/src/NNLayerWidget.cpp \
+    $$PWD/src/NNParam.cpp \
+    $$PWD/src/Optimizer.cpp \
+    $$PWD/src/ParamWidget.cpp \
+    $$PWD/src/ParamsEditorWidget.cpp \
+    $$PWD/src/Scheduler.cpp \
+    $$PWD/src/main.cpp
 
 HEADERS += \
-    ActivationFunc.h \
-    ConstructorWidget.h \
-    GlobalSettingsWidget.h \
-    InitializerFunc.h \
-    MainWidget.h \
-    NNLayerParams.h \
-    NNLayerWidget.h \
-    NNParam.h \
-    Optimizer.h \
-    ParamWidget.h \
-    ParamsEditorWidget.h \
-    Scheduler.h
+    $$PWD/src/ActivationFunc.h \
+    $$PWD/src/ConstructorWidget.h \
+    $$PWD/src/GlobalSettingsWidget.h \
+    $$PWD/src/InitializerFunc.h \
+    $$PWD/src/MainWidget.h \
+    $$PWD/src/NNLayerParams.h \
+    $$PWD/src/NNLayerWidget.h \
+    $$PWD/src/NNParam.h \
+    $$PWD/src/Optimizer.h \
+    $$PWD/src/ParamWidget.h \
+    $$PWD/src/ParamsEditorWidget.h \
+    $$PWD/src/Scheduler.h
