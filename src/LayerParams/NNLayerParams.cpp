@@ -4,6 +4,8 @@
 
 #include "ActivationFunc.h"
 #include "InitializerFunc.h"
+#include "Normalization.h"
+#include "Dropout.h"
 
 #include "LinearLayerParams.h"
 #include "Conv1dLayerParams.h"
@@ -77,7 +79,10 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeReshape()
 std::shared_ptr<NNLayerParams> NNLayerParams::makeNormalization()
 {
     auto strName = "Normalization";
-    std::vector<NNParam> vParams = {NNParam{"strange_param", 0}};
+    std::vector<NNParam> vParams = {NNParam{Normalization::getClassName(),
+                                            Normalization{enu_normalization::batchnorm1d}.toString(),
+                                            QVariant::Type::String, true},
+                                    NNParam{"strange_param", 0}};
 
     return std::make_shared<NormalizationLayerParams>(strName, vParams);
 }
@@ -99,6 +104,17 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeConcatinate()
     std::vector<NNParam> vParams = {NNParam{"axis", 0}};
 
     return std::make_shared<ConcatinateLayerParams>(strName, vParams);
+}
+
+std::shared_ptr<NNLayerParams> NNLayerParams::makeDropout()
+{
+    auto strName = "Dropout";
+    std::vector<NNParam> vParams = {NNParam{Dropout::getClassName(),
+                                            Dropout{enu_dropout::dropout}.toString(),
+                                            QVariant::Type::String, true},
+                                    NNParam{"p", 0, QVariant::Type::Double}};
+
+    return std::make_shared<NormalizationLayerParams>(strName, vParams);
 }
 
 void NNLayerParams::setName(const std::string& strName) noexcept
@@ -124,6 +140,11 @@ void NNLayerParams::setParams(const std::vector<NNParam>& vParams) noexcept
 bool NNLayerParams::isValid() const noexcept
 {
     return !m_vParams.empty();
+}
+
+QString NNLayerParams::getDisplayName() const noexcept
+{
+    return QString::fromStdString(m_strName);
 }
 
 std::string NNLayerParams::makeXmlString() const

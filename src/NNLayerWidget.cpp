@@ -32,7 +32,7 @@ NNLayerWidget::NNLayerWidget(std::size_t sId, const std::shared_ptr<NNLayerParam
       m_spParams{spParams},
       m_bValidParams{true},
       m_pInputLabel{new QLabel{make_size_string(m_vInputSize)}},
-      m_pNameLabel{new QLabel{QString::fromStdString(m_spParams->getName())}},
+      m_pNameLabel{new QLabel{m_spParams->getDisplayName()}},
       m_pOutputLabel{new QLabel{make_size_string({})}}
 {
     setAttribute(Qt::WA_DeleteOnClose);
@@ -48,6 +48,7 @@ std::size_t NNLayerWidget::getId() const
 void NNLayerWidget::setParams(const std::shared_ptr<NNLayerParams>& spParams) noexcept
 {
     m_spParams = spParams;
+    m_pNameLabel->setText(m_spParams->getDisplayName());
 }
 
 const std::shared_ptr<NNLayerParams>& NNLayerWidget::getParams() const noexcept
@@ -169,6 +170,10 @@ void NNLayerWidget::initGUI()
     pLayout->addWidget(m_pInputLabel);
     pLayout->addWidget(m_pNameLabel);
     pLayout->addWidget(m_pOutputLabel);
+
+    pLayout->setContentsMargins(5,5,5,5);
+
+    setLayout(pLayout);
 }
 
 void NNLayerWidget::updateStyle()
@@ -185,5 +190,12 @@ void NNLayerWidget::updateStyle()
     if (!m_vInputSize.empty())
         m_pOutputLabel->setText(make_size_string(calcOutputSize()));
 
-    setFixedWidth(fontMetrics().horizontalAdvance(m_pOutputLabel->text()) * 2);
+    auto sInputStrSize = fontMetrics().horizontalAdvance(m_pInputLabel->text());
+    auto sNameStrSize = fontMetrics().horizontalAdvance(m_pNameLabel->text());
+    auto sOutputStrSize = fontMetrics().horizontalAdvance(m_pOutputLabel->text());
+
+    auto sMaxSize = std::max(sInputStrSize, sNameStrSize);
+    sMaxSize = std::max(sMaxSize, sOutputStrSize);
+
+    setFixedWidth(sMaxSize + 5 * 2);
 }

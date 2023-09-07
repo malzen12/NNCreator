@@ -177,8 +177,10 @@ void ConstructorWidget::onProcActions(QAction* pAction)
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeNormalization());
     else if ("Make activation" == pAction->text())
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeActivation());
-    else if ("Make concatinate")
+    else if ("Make concatinate" == pAction->text())
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConcatinate());
+    else if ("Make dropout" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeDropout());
     else
         throw std::runtime_error("unknown action passed");
 }
@@ -218,6 +220,7 @@ void ConstructorWidget::initGUI()
     m_pMenu->addAction(new QAction{"Make normalization"});
     m_pMenu->addAction(new QAction{"Make activation"});
     m_pMenu->addAction(new QAction{"Make concatinate"});
+    m_pMenu->addAction(new QAction{"Make dropout"});
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 }

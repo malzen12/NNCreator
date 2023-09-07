@@ -2,10 +2,10 @@
 
 #include "NNLayerParams.h"
 
-class NormalizationLayerParams : public NNLayerParams
+class DropoutLayerParams : public NNLayerParams
 {
 public:
-    explicit NormalizationLayerParams(const std::string& strName, const std::vector<NNParam>& vParams);
+    explicit DropoutLayerParams(const std::string& strName, const std::vector<NNParam>& vParams);
 
     QString getDisplayName() const noexcept final;
 

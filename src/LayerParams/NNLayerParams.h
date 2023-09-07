@@ -22,6 +22,7 @@ public:
     static std::shared_ptr<NNLayerParams> makeNormalization();
     static std::shared_ptr<NNLayerParams> makeActivation();
     static std::shared_ptr<NNLayerParams> makeConcatinate();
+    static std::shared_ptr<NNLayerParams> makeDropout();
 
     void setName(const std::string& strName) noexcept;
     const std::string& getName() const noexcept;
@@ -30,6 +31,8 @@ public:
     void setParams(const std::vector<NNParam>& vParams) noexcept;
 
     bool isValid() const noexcept;
+
+    virtual QString getDisplayName() const noexcept;
 
     virtual bool checkInputSize(const std::vector<std::size_t>& vInputSize) const = 0;
     virtual std::vector<std::size_t> calcOutputSize(const std::vector<std::size_t>& vInputSize) const = 0;

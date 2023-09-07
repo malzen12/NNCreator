@@ -21,8 +21,11 @@ SOURCES += \
     src/LayerParams/ActivationLayerParams.cpp \
     src/LayerParams/ConcatinateLayerParams.cpp \
     src/LayerParams/Conv1dLayerParams.cpp \
+    src/LayerParams/Dropout.cpp \
+    src/LayerParams/DropoutLayerParams.cpp \
     src/LayerParams/EmbeddingLayerParams.cpp \
     src/LayerParams/LinearLayerParams.cpp \
+    src/LayerParams/Normalization.cpp \
     src/LayerParams/NormalizationLayerParams.cpp \
     src/LayerParams/PoolLayerParams.cpp \
     src/LayerParams/ReshapeLayerParams.cpp
@@ -43,8 +46,11 @@ HEADERS += \
     src/LayerParams/ActivationLayerParams.h \
     src/LayerParams/ConcatinateLayerParams.h \
     src/LayerParams/Conv1dLayerParams.h \
+    src/LayerParams/Dropout.h \
+    src/LayerParams/DropoutLayerParams.h \
     src/LayerParams/EmbeddingLayerParams.h \
     src/LayerParams/LinearLayerParams.h \
+    src/LayerParams/Normalization.h \
     src/LayerParams/NormalizationLayerParams.h \
     src/LayerParams/PoolLayerParams.h \
     src/LayerParams/ReshapeLayerParams.h

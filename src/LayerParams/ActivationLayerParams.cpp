@@ -6,6 +6,11 @@ ActivationLayerParams::ActivationLayerParams(const std::string& strName, const s
     assert(m_vParams.size() >= 1);
 }
 
+QString ActivationLayerParams::getDisplayName() const noexcept
+{
+    return m_vParams[0].getValue().toString();
+}
+
 bool ActivationLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
 {
     return !vInputSize.empty();

@@ -8,6 +8,8 @@
 
 #include "LayerParams/ActivationFunc.h"
 #include "LayerParams/InitializerFunc.h"
+#include "LayerParams/Normalization.h"
+#include "LayerParams/Dropout.h"
 #include "Optimizer.h"
 #include "Scheduler.h"
 
@@ -18,6 +20,12 @@ QStringList get_enum_names(const NNParam& crParam)
 
     else if (InitializerFunc::getClassName() == crParam.getName())
         return InitializerFunc::getAllNames();
+
+    else if (Normalization::getClassName() == crParam.getName())
+        return Normalization::getAllNames();
+
+    else if (Dropout::getClassName() == crParam.getName())
+        return Dropout::getAllNames();
 
     else if (Optimizer::getClassName() == crParam.getName())
         return Optimizer::getAllNames();
