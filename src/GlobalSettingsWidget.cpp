@@ -50,7 +50,8 @@ void GlobalSettingsWidget::initGUI()
 
     m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Optimizer", "Optimizer", QVariant::Type::String, true}}, 0, 0, 1, 3);
     m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Optimizer_speed", 0.001, QVariant::Type::Double}}, 1, 0, 1, 3);
-    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Epoch_cnt", 100}}, 2, 0, 1, 3);
+    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"weight_decay", 0, QVariant::Type::Double}}, 2, 0, 1, 3);
+    m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Epoch_cnt", 100}}, 3, 0, 1, 3);
     m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Scheduler", "Scheduler", QVariant::Type::String, true}}, 4, 0, 1, 3);
     m_pTrainSettingsLayout->addWidget(new ParamWidget{NNParam{"Train Xml path", "Xmls\\TestTrain.xml", QVariant::Type::String}}, 5, 0, 1, 3);
     m_pTrainSettingsLayout->addWidget(m_pMakeTrainXmlButton, 6, 0, 1, 3);
