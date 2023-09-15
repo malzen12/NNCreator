@@ -9,12 +9,14 @@
 
 #include "LinearLayerParams.h"
 #include "Conv1dLayerParams.h"
+#include "Conv2dLayerParams.h"
 #include "PoolLayerParams.h"
 #include "EmbeddingLayerParams.h"
 #include "ReshapeLayerParams.h"
 #include "NormalizationLayerParams.h"
 #include "ActivationLayerParams.h"
 #include "ConcatinateLayerParams.h"
+#include "Pool2dLayerParams.h"
 
 NNLayerParams::NNLayerParams(const std::string& strName, const std::vector<NNParam>& vParams)
     : m_strName{strName},
@@ -52,12 +54,42 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeConv1d()
     return std::make_shared<Conv1dLayerParams>(strName, vParams);
 }
 
+std::shared_ptr<NNLayerParams> NNLayerParams::makeConv2d()
+{
+    auto strName = "Conv2d";
+    std::vector<NNParam> vParams = {NNParam{"in_depth", 0},
+                                    NNParam{"out_depth", 0},
+                                    NNParam{"kernel_size", QList<QVariant>{0, 0}, QVariant::Type::List},
+                                    NNParam{"stride", QList<QVariant>{1, 1}, QVariant::Type::List},
+                                    NNParam{"padding", QList<QVariant>{0, 0}, QVariant::Type::List},
+                                    NNParam{"dilitation", QList<QVariant>{1, 1}, QVariant::Type::List},
+                                    NNParam{InitializerFunc::getClassName(),
+                                            InitializerFunc{static_cast<initializer_func>(0)}.toString(),
+                                            QVariant::Type::String, true}};
+
+    return std::make_shared<Conv2dLayerParams>(strName, vParams);
+}
+
 std::shared_ptr<NNLayerParams> NNLayerParams::makePool()
 {
     auto strName = "Pool";
     std::vector<NNParam> vParams = {NNParam{"kernel_size", 0}, NNParam{"stride", 1}, NNParam{"padding", 0}, NNParam{"dilitation", 1}};
 
     return std::make_shared<PoolLayerParams>(strName, vParams);
+}
+
+std::shared_ptr<NNLayerParams> NNLayerParams::makePool2d()
+{
+    auto strName = "Pool2d";
+    std::vector<NNParam> vParams = {NNParam{"kernel_size", QList<QVariant>{0, 0}, QVariant::Type::List},
+                                    NNParam{"stride", QList<QVariant>{1, 1}, QVariant::Type::List},
+                                    NNParam{"padding", QList<QVariant>{0, 0}, QVariant::Type::List},
+                                    NNParam{"dilitation", QList<QVariant>{1, 1}, QVariant::Type::List},
+                                    NNParam{InitializerFunc::getClassName(),
+                                            InitializerFunc{static_cast<initializer_func>(0)}.toString(),
+                                            QVariant::Type::String, true}};
+
+    return std::make_shared<Pool2dLayerParams>(strName, vParams);
 }
 
 std::shared_ptr<NNLayerParams> NNLayerParams::makeEmbedding()

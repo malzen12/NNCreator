@@ -4,53 +4,62 @@ QT += widgets
 
 CONFIG += c++17
 
+INCLUDEPATH += \
+                $$PWD/src \
+                $$PWD/src/LayerParams \
+                $$PWD/src/EnumParams
+
 SOURCES += \
     $$PWD/src/ConstructorWidget.cpp \
     $$PWD/src/GlobalSettingsWidget.cpp \
     $$PWD/src/MainWidget.cpp \
     $$PWD/src/NNLayerWidget.cpp \
-    $$PWD/src/Optimizer.cpp \
     $$PWD/src/ParamWidget.cpp \
     $$PWD/src/ParamsEditorWidget.cpp \
-    $$PWD/src/Scheduler.cpp \
     $$PWD/src/main.cpp \
-    $$PWD/src/LayerParams/ActivationFunc.cpp \
-    $$PWD/src/LayerParams/InitializerFunc.cpp \
+    $$PWD/src/EnumParams/ActivationFunc.cpp \
+    $$PWD/src/EnumParams/Dropout.cpp \
+    $$PWD/src/EnumParams/InitializerFunc.cpp \
+    $$PWD/src/EnumParams/Normalization.cpp \
+    $$PWD/src/EnumParams/Optimizer.cpp \
+    $$PWD/src/EnumParams/Scheduler.cpp \
     $$PWD/src/LayerParams/NNParam.cpp \
     $$PWD/src/LayerParams/NNLayerParams.cpp \
-    src/LayerParams/ActivationLayerParams.cpp \
-    src/LayerParams/ConcatinateLayerParams.cpp \
-    src/LayerParams/Conv1dLayerParams.cpp \
-    src/LayerParams/Dropout.cpp \
-    src/LayerParams/DropoutLayerParams.cpp \
-    src/LayerParams/EmbeddingLayerParams.cpp \
-    src/LayerParams/LinearLayerParams.cpp \
-    src/LayerParams/Normalization.cpp \
-    src/LayerParams/NormalizationLayerParams.cpp \
-    src/LayerParams/PoolLayerParams.cpp \
-    src/LayerParams/ReshapeLayerParams.cpp
+    $$PWD/src/LayerParams/ActivationLayerParams.cpp \
+    $$PWD/src/LayerParams/ConcatinateLayerParams.cpp \
+    $$PWD/src/LayerParams/Conv1dLayerParams.cpp \
+    $$PWD/src/LayerParams/DropoutLayerParams.cpp \
+    $$PWD/src/LayerParams/EmbeddingLayerParams.cpp \
+    $$PWD/src/LayerParams/LinearLayerParams.cpp \
+    $$PWD/src/LayerParams/NormalizationLayerParams.cpp \
+    $$PWD/src/LayerParams/PoolLayerParams.cpp \
+    $$PWD/src/LayerParams/ReshapeLayerParams.cpp \
+    $$PWD/src/LayerParams/Conv2dLayerParams.cpp \
+    src/LayerParams/Pool2dLayerParams.cpp
 
 HEADERS += \
     $$PWD/src/ConstructorWidget.h \
     $$PWD/src/GlobalSettingsWidget.h \
     $$PWD/src/MainWidget.h \
     $$PWD/src/NNLayerWidget.h \
-    $$PWD/src/Optimizer.h \
     $$PWD/src/ParamWidget.h \
     $$PWD/src/ParamsEditorWidget.h \
-    $$PWD/src/Scheduler.h \
-    $$PWD/src/LayerParams/ActivationFunc.h \
-    $$PWD/src/LayerParams/InitializerFunc.h \
+    $$PWD/src/EnumParams/ActivationFunc.h \
+    $$PWD/src/EnumParams/Dropout.h \
+    $$PWD/src/EnumParams/InitializerFunc.h \
+    $$PWD/src/EnumParams/Normalization.h \
+    $$PWD/src/EnumParams/Optimizer.h \
+    $$PWD/src/EnumParams/Scheduler.h \
     $$PWD/src/LayerParams/NNParam.h \
     $$PWD/src/LayerParams/NNLayerParams.h \
-    src/LayerParams/ActivationLayerParams.h \
-    src/LayerParams/ConcatinateLayerParams.h \
-    src/LayerParams/Conv1dLayerParams.h \
-    src/LayerParams/Dropout.h \
-    src/LayerParams/DropoutLayerParams.h \
-    src/LayerParams/EmbeddingLayerParams.h \
-    src/LayerParams/LinearLayerParams.h \
-    src/LayerParams/Normalization.h \
-    src/LayerParams/NormalizationLayerParams.h \
-    src/LayerParams/PoolLayerParams.h \
-    src/LayerParams/ReshapeLayerParams.h
+    $$PWD/src/LayerParams/ActivationLayerParams.h \
+    $$PWD/src/LayerParams/ConcatinateLayerParams.h \
+    $$PWD/src/LayerParams/Conv1dLayerParams.h \
+    $$PWD/src/LayerParams/DropoutLayerParams.h \
+    $$PWD/src/LayerParams/EmbeddingLayerParams.h \
+    $$PWD/src/LayerParams/LinearLayerParams.h \
+    $$PWD/src/LayerParams/NormalizationLayerParams.h \
+    $$PWD/src/LayerParams/PoolLayerParams.h \
+    $$PWD/src/LayerParams/ReshapeLayerParams.h \
+    $$PWD/src/LayerParams/Conv2dLayerParams.h \
+    src/LayerParams/Pool2dLayerParams.h

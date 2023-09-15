@@ -167,8 +167,12 @@ void ConstructorWidget::onProcActions(QAction* pAction)
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeLinear());
     else if ("Make conv1d" == pAction->text())
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConv1d());
+    else if ("Make conv2d" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConv2d());
     else if ("Make pool" == pAction->text())
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makePool());
+    else if ("Make pool2d" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makePool2d());
     else if ("Make embedding" == pAction->text())
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeEmbedding());
     else if ("Make reshape" == pAction->text())
@@ -214,7 +218,9 @@ void ConstructorWidget::initGUI()
 {
     m_pMenu->addAction(new QAction{"Make linear"});
     m_pMenu->addAction(new QAction{"Make conv1d"});
+    m_pMenu->addAction(new QAction{"Make conv2d"});
     m_pMenu->addAction(new QAction{"Make pool"});
+    m_pMenu->addAction(new QAction{"Make pool2d"});
     m_pMenu->addAction(new QAction{"Make embedding"});
     m_pMenu->addAction(new QAction{"Make reshape"});
     m_pMenu->addAction(new QAction{"Make normalization"});

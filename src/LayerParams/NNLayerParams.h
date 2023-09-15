@@ -16,7 +16,9 @@ public:
 
     static std::shared_ptr<NNLayerParams> makeLinear();
     static std::shared_ptr<NNLayerParams> makeConv1d();
+    static std::shared_ptr<NNLayerParams> makeConv2d();
     static std::shared_ptr<NNLayerParams> makePool();
+    static std::shared_ptr<NNLayerParams> makePool2d();
     static std::shared_ptr<NNLayerParams> makeEmbedding();
     static std::shared_ptr<NNLayerParams> makeReshape();
     static std::shared_ptr<NNLayerParams> makeNormalization();

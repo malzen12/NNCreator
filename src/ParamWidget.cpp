@@ -6,10 +6,10 @@
 #include <QLineEdit>
 #include <QDoubleSpinBox>
 
-#include "LayerParams/ActivationFunc.h"
-#include "LayerParams/InitializerFunc.h"
-#include "LayerParams/Normalization.h"
-#include "LayerParams/Dropout.h"
+#include "ActivationFunc.h"
+#include "InitializerFunc.h"
+#include "Normalization.h"
+#include "Dropout.h"
 #include "Optimizer.h"
 #include "Scheduler.h"
 
@@ -77,8 +77,7 @@ const NNParam& ParamWidget::collectValue()
         for (const auto& qstrAxis : StringList)
         {
             auto sAxis = qstrAxis.toUInt();
-            if (sAxis)
-                lRes.push_back(sAxis);
+            lRes.push_back(sAxis);
         }
 
         m_Param.setValue(lRes);
@@ -127,12 +126,7 @@ void ParamWidget::initGUI()
         for (const auto& crVal : List)
         {
             auto sVal = crVal.toUInt();
-            if (0 < sVal && sVal < 10)
-                Res += "00" + QString::number(sVal);
-            else if (sVal < 100)
-                Res += "0" + QString::number(sVal);
-            else if (sVal < 1000)
-                Res += QString::number(sVal);
+            Res += QString::number(sVal) + ".";
         }
         pWdg->setText(Res);
         m_pEditorWidget = pWdg;
