@@ -25,6 +25,8 @@ public:
     static std::shared_ptr<NNLayerParams> makeActivation();
     static std::shared_ptr<NNLayerParams> makeConcatinate();
     static std::shared_ptr<NNLayerParams> makeDropout();
+    static std::shared_ptr<NNLayerParams> makeFlatten();
+    static std::shared_ptr<NNLayerParams> makeRecurrent();
 
     void setName(const std::string& strName) noexcept;
     const std::string& getName() const noexcept;

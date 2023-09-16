@@ -6,6 +6,7 @@
 #include "InitializerFunc.h"
 #include "Normalization.h"
 #include "Dropout.h"
+#include "Recurrent.h"
 
 #include "LinearLayerParams.h"
 #include "Conv1dLayerParams.h"
@@ -17,6 +18,9 @@
 #include "ActivationLayerParams.h"
 #include "ConcatinateLayerParams.h"
 #include "Pool2dLayerParams.h"
+#include "DropoutLayerParams.h"
+#include "FlattenLayerParams.h"
+#include "RecurrentLayerParams.h"
 
 NNLayerParams::NNLayerParams(const std::string& strName, const std::vector<NNParam>& vParams)
     : m_strName{strName},
@@ -146,7 +150,30 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeDropout()
                                             QVariant::Type::String, true},
                                     NNParam{"p", 0, QVariant::Type::Double}};
 
-    return std::make_shared<NormalizationLayerParams>(strName, vParams);
+    return std::make_shared<DropoutLayerParams>(strName, vParams);
+}
+
+std::shared_ptr<NNLayerParams> NNLayerParams::makeFlatten()
+{
+    auto strName = "Flatten";
+    std::vector<NNParam> vParams = {NNParam{"axis_to_flat", QList<QVariant>{0, 1}, QVariant::Type::List}};
+
+    return std::make_shared<FlattenLayerParams>(strName, vParams);
+}
+
+std::shared_ptr<NNLayerParams> NNLayerParams::makeRecurrent()
+{
+    auto strName = "Recurrent";
+    std::vector<NNParam> vParams = {NNParam{Recurrent::getClassName(),
+                                            Recurrent{enu_recurrent::gru}.toString(),
+                                            QVariant::Type::String, true},
+                                    NNParam{"input_size", 0},
+                                    NNParam{"hidden_size", 0},
+                                    NNParam{"num_layers", 0},
+                                    NNParam{"bias", false, QVariant::Type::Bool},
+                                    NNParam{"bidirectional", false, QVariant::Type::Bool}};
+
+    return std::make_shared<RecurrentLayerParams>(strName, vParams);
 }
 
 void NNLayerParams::setName(const std::string& strName) noexcept

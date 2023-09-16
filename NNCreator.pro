@@ -35,7 +35,10 @@ SOURCES += \
     $$PWD/src/LayerParams/PoolLayerParams.cpp \
     $$PWD/src/LayerParams/ReshapeLayerParams.cpp \
     $$PWD/src/LayerParams/Conv2dLayerParams.cpp \
-    src/LayerParams/Pool2dLayerParams.cpp
+    src/EnumParams/Recurrent.cpp \
+    src/LayerParams/FlattenLayerParams.cpp \
+    src/LayerParams/Pool2dLayerParams.cpp \
+    src/LayerParams/RecurrentLayerParams.cpp
 
 HEADERS += \
     $$PWD/src/ConstructorWidget.h \
@@ -62,4 +65,7 @@ HEADERS += \
     $$PWD/src/LayerParams/PoolLayerParams.h \
     $$PWD/src/LayerParams/ReshapeLayerParams.h \
     $$PWD/src/LayerParams/Conv2dLayerParams.h \
-    src/LayerParams/Pool2dLayerParams.h
+    src/EnumParams/Recurrent.h \
+    src/LayerParams/FlattenLayerParams.h \
+    src/LayerParams/Pool2dLayerParams.h \
+    src/LayerParams/RecurrentLayerParams.h
