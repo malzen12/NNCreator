@@ -18,6 +18,8 @@ ActivationFunc ActivationFunc::fromString(const QString& qstrName)
         return ActivationFunc{activation_func::tanh};
     else if ("Selu" == qstrName)
         return ActivationFunc{activation_func::selu};
+    else if ("Softmax" == qstrName)
+        return ActivationFunc{activation_func::softmax};
     else
         throw std::string{"Invalid func name"};
 }
@@ -60,6 +62,8 @@ QString ActivationFunc::toString() const
         return "Tanh";
     if (activation_func::selu == m_Type)
         return "Selu";
+    if (activation_func::softmax == m_Type)
+        return "Softmax";
     else
         return "";
 }

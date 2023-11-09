@@ -20,7 +20,7 @@ bool RecurrentLayerParams::checkInputSize(const std::vector<std::size_t>& vInput
 
 std::vector<std::size_t> RecurrentLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
 {
-    assert(vInputSize.size() > 1);
+    assert(vInputSize.size() >= 1);
 
     auto sHiddenSize = m_vParams[2].getValue().toUInt();
     auto bBidirectional = m_vParams[5].getValue().toBool();

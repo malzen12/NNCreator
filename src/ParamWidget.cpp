@@ -112,7 +112,8 @@ void ParamWidget::initGUI()
     else if (m_Param.getType() == QVariant::Type::UInt)
     {
         auto pWdg = new QSpinBox;
-        pWdg->setMaximum(5000);
+        auto sMax = static_cast<std::size_t>(std::numeric_limits<int>::max());
+        pWdg->setMaximum(sMax);
         pWdg->setValue(m_Param.getValue().toUInt());
         m_pEditorWidget = pWdg;
     }

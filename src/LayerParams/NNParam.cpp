@@ -45,6 +45,8 @@ std::string NNParam::makeXmlString() const
         Stream << m_Value.toString().toStdString();
     else if (m_Type == QVariant::Type::UInt)
         Stream << m_Value.toUInt();
+    else if (m_Type == QVariant::Type::Bool)
+        Stream << m_Value.toBool();
     else if (m_Type == QVariant::Type::List)
     {
         auto lVal = m_Value.toList();

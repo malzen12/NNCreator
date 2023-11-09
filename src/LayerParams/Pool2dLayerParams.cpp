@@ -2,7 +2,7 @@
 
 inline std::size_t calc_output_axis(std::size_t sInput, std::size_t sKernel, std::size_t sStride, std::size_t sPadding, std::size_t sDilitation)
 {
-    return (sInput + 2 * sPadding - sDilitation * (sKernel - 1) - 1) / sStride + 1;
+    return static_cast<double>(sInput + 2 * sPadding - sDilitation * (sKernel - 1) - 1) / sStride + 1;
 }
 
 Pool2dLayerParams::Pool2dLayerParams(const std::string& strName, const std::vector<NNParam>& vParams)

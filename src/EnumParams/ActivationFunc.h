@@ -12,6 +12,7 @@ enum class activation_func
     sigmoid,
     tanh,
     selu,
+    softmax,
     cnt
 };
 
