@@ -199,3 +199,8 @@ void NNLayerWidget::updateStyle()
 
     setFixedWidth(sMaxSize + 5 * 2);
 }
+
+const std::vector<std::size_t> &NNLayerWidget::getInputSize() const
+{
+    return m_vInputSize;
+}

@@ -3,6 +3,7 @@
 #include <sstream>
 #include <queue>
 #include <set>
+#include <unordered_set>
 
 #include <QMouseEvent>
 #include <QPaintEvent>
@@ -57,15 +58,14 @@ ConstructorWidget::ConstructorWidget()
     setMouseTracking(false);
 }
 
-std::string ConstructorWidget::makeXmlString()
+std::string ConstructorWidget::makeXmlString() const
 {
     auto pStart = findStart();
 
     std::stringstream Stream;
-
     print_params(m_vInputSize, "data_size", Stream);
 
-    Stream << "<layers>" << std::endl;
+    Stream << "<layers>" << '\n';
     bfs(pStart, [&Stream](NNLayerWidget* pCurrent, NNLayerWidget* /*pNext*/)
     {
         Stream << "<l>" << std::endl;
@@ -73,16 +73,200 @@ std::string ConstructorWidget::makeXmlString()
 
         Stream << pCurrent->getParams()->makeXmlString();
 
-        Stream << "<forwards>" << std::endl;
+        Stream << "<forwards>" << '\n';
         for (auto pLayer : pCurrent->getForward())
             print_params(pLayer->getId(), "v", Stream);
-        Stream << "</forwards>" << std::endl;
+        Stream << "</forwards>" << '\n';
 
-        Stream << "</l>" << std::endl;
+        Stream << "</l>" << '\n';
     }, {});
     Stream << "</layers>" << std::endl;
 
     return Stream.str();
+}
+
+std::string ConstructorWidget::makePyString() const
+{
+    auto pStart = findStart();
+
+    std::stringstream Stream;
+    bool isEnum;
+
+    Stream << R"(class Net(nn.Module):)" << '\n';
+    int tab = 0;
+    ++tab;
+    Stream << std::string(tab, '\t')
+           << R"(def __init__(self):)" << '\n';
+    ++tab;
+    Stream << std::string(tab, '\t')
+           << R"(super().__init__())" << '\n';
+
+
+    //  Stream <<
+    //R"(class Net(nn.Module):
+    //    def __init__(self):
+    //        super().__init__()
+    //)";
+    //  int tab = 2;
+
+
+
+
+    auto createName = [&Stream](const NNLayerWidget* pParam){
+        Stream << "self." << pParam->getParams()->getName()
+               << "_" << std::to_string(pParam->getId());
+    };
+    auto createNameEnum = [&Stream](const NNLayerWidget* pParam){
+        Stream << "self." << pParam->getParams()->getParams().front().getValue().toString().toStdString()
+               << "_" << std::to_string(pParam->getId());
+    };
+    auto createNameEnumRecurrent = [&Stream](const NNLayerWidget* pParam){
+        Stream << "self." << pParam->getParams()->getParams().front().getValue().toString().toStdString()
+               << "_" << std::to_string(pParam->getId());
+    };
+    auto createNameMyRecurrent = [&Stream](const NNLayerWidget* pParam){
+        Stream << "self." << "Linear"
+               << "_" << std::to_string(pParam->getId()) << "h";
+    };
+
+    for(const auto& pCurrent: m_vLayers){
+        isEnum = pCurrent->getParams()->getParams().front().isEnum();
+        if(!isEnum){
+            if(pCurrent->getParams()->getName() == "MyRecurrent"){
+                Stream << std::string(tab, '\t');
+                createNameMyRecurrent(pCurrent);
+            }else{
+                Stream << std::string(tab, '\t');
+                createName(pCurrent);
+            }
+        }
+        else{
+            auto enamName = pCurrent->getParams()->getParams().front().getName();
+            if(enamName == "Recurrent"){
+                Stream << std::string(tab, '\t');
+                createNameEnumRecurrent(pCurrent);
+            }else if(enamName == "Normalization"){
+                continue;
+            }
+        }
+
+
+
+
+        if(!isEnum){
+            if(pCurrent->getParams()->getName() == "MyRecurrent"){
+                Stream  << " = nn."
+                        << "Linear"
+                        << "(";
+                auto it = pCurrent->getParams()->getParams().cbegin();
+                Stream << it->makePyString();
+                ++it;
+                for(auto ite = pCurrent->getParams()->getParams().cend(); std::next(it) != ite; ++it){
+                    Stream <<", " << it->makePyString();
+                }
+                Stream << ")\n";
+            }else{
+                Stream  << " = nn."
+                        << pCurrent->getParams()->getName()
+                        << "(";
+                auto it = pCurrent->getParams()->getParams().cbegin();
+                Stream << it->makePyString();
+                ++it;
+                for(auto ite = pCurrent->getParams()->getParams().cend(); std::next(it) != ite; ++it){
+                    Stream <<", " << it->makePyString();
+                }
+                Stream << ")\n";
+            }
+
+
+
+        }
+        else{
+            Stream  << " = nn."
+                    << pCurrent->getParams()->getParams().front().getValue().toString().toStdString()
+                    << "(";
+            auto it = pCurrent->getParams()->getParams().cbegin();
+            ++it;
+            Stream << it->makePyString() << ", ";
+            ++it;
+            Stream << it->makePyString() << ", ";
+            ++it;
+            Stream << it->makePyString() << ", ";
+            ++it;
+            if(pCurrent->getParams()->getParams().front().getValue() == "RNN")
+                Stream << R"('tanh')" << ", ";
+            Stream << it->makePyString() << ", ";
+            ++it;
+            Stream << R"(False, 0.0)" << ", ";
+            Stream << it->makePyString();
+            Stream << ")\n";
+
+        }
+
+    }
+
+    Stream << '\n';
+    --tab;
+    Stream << std::string(tab, '\t')
+           << R"(def forward(self, x):)" << '\n';
+    ++tab;
+    auto createNameForward = [tab, &Stream, createName, createNameEnumRecurrent, createNameEnum, createNameMyRecurrent](const NNLayerWidget* pParam){
+        bool isEnum = pParam->getParams()->getParams().front().isEnum();
+        if(!isEnum){
+            if(pParam->getParams()->getName() == "MyRecurrent"){
+                int n = std::next(pParam->getParams()->getParams().cbegin())->getValue().toInt();
+                for(int i = 0; i < n; ++i ){
+                    Stream << std::string(tab, '\t')
+                           << "x = ";
+                    createNameMyRecurrent(pParam);
+                    Stream << "(x)" << '\n';
+                }
+            }else{
+                Stream << std::string(tab, '\t')
+                       << "x = ";
+                createName(pParam);
+                Stream << "(x)" << '\n';
+            }
+
+        }else{
+            auto enamName = pParam->getParams()->getParams().cbegin()->getName();
+            if(enamName == "Recurrent"){
+                Stream << std::string(tab, '\t')
+                       << "x, y = ";
+                createNameEnumRecurrent(pParam);
+                Stream << "(x)" << '\n';
+            }else if(enamName == "Normalization"){
+                Stream << std::string(tab, '\t');
+                createNameEnum(pParam);
+                Stream  << " = nn."
+                        << pParam->getParams()->getParams().front().getValue().toString().toStdString()
+                        << R"((x.size()))" << '\n';
+                Stream << std::string(tab, '\t')
+                       << "x = ";
+                createNameEnum(pParam);
+                Stream << "(x)" << '\n';
+            }
+        }
+    };
+
+    createNameForward(pStart);
+
+    bfs(pStart, [tab, &Stream, createNameForward](NNLayerWidget* pCurrent, NNLayerWidget* /*pNext*/)
+    {
+        for (auto pLayer : pCurrent->getForward()){
+            createNameForward(pLayer);
+        }
+    }, {});
+
+    Stream << std::string(tab, '\t')
+           << R"(return x)" << '\n';
+
+    return Stream.str();
+}
+
+bool ConstructorWidget::isEmpty () const noexcept
+{
+    return m_vLayers.empty();
 }
 
 void ConstructorWidget::onSetParams(const std::shared_ptr<NNLayerParams>& spParams)
@@ -189,6 +373,8 @@ void ConstructorWidget::onProcActions(QAction* pAction)
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeFlatten());
     else if ("Make recurrent" == pAction->text())
         onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeRecurrent());
+    else if ("Make MyRecurrent" == pAction->text())
+        onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeMyRecurrent());
     else
         throw std::runtime_error("unknown action passed");
 }
@@ -233,6 +419,7 @@ void ConstructorWidget::initGUI()
     m_pMenu->addAction(new QAction{"Make dropout"});
     m_pMenu->addAction(new QAction{"Make flatten"});
     m_pMenu->addAction(new QAction{"Make recurrent"});
+    m_pMenu->addAction(new QAction{"Make MyRecurrent"});
 
     setContextMenuPolicy(Qt::CustomContextMenu);
 }
@@ -307,19 +494,17 @@ void ConstructorWidget::checkSizes()
 
     pStart->addInputSize(m_vInputSize);
 
-    bfs(pStart, {}, [](NNLayerWidget* pCurrent, NNLayerWidget* pNext)
-    {
+    bfs(pStart, {}, [](NNLayerWidget* pCurrent, NNLayerWidget* pNext){
         if (pNext)
             pNext->addInputSize(pCurrent->calcOutputSize());
     });
 }
 
-NNLayerWidget* ConstructorWidget::findStart()
+NNLayerWidget* ConstructorWidget::findStart() const
 {
-    for (auto pChecking : m_vLayers)
-    {
-        auto bStart = std::all_of(m_vLayers.begin(), m_vLayers.end(), [pChecking](NNLayerWidget* pLayer)
-        {
+#if 0 // start solution without cheking how many roots    always O(N^2) speed O(1) memory
+    for (const auto pChecking : m_vLayers){
+        bool bStart = std::all_of(m_vLayers.begin(), m_vLayers.end(), [pChecking](NNLayerWidget* pLayer){
             const auto& vForwards = pLayer->getForward();
             auto it = std::find(vForwards.begin(), vForwards.end(), pChecking);
             return it == vForwards.end();
@@ -328,9 +513,139 @@ NNLayerWidget* ConstructorWidget::findStart()
             return pChecking;
     }
     throw std::runtime_error("circular dependensis");
+#elif 1 // start solution with cheking how many roots    always O(N^2) speed O(1) memory
+    if(m_vLayers.size() == 1){
+        return m_vLayers.front();
+    }
+    int count = 0;
+    auto pResult = *(m_vLayers.begin());
+    for (const auto pChecking : m_vLayers){
+        bool bStart = std::all_of(m_vLayers.begin(), m_vLayers.end(), [pChecking](NNLayerWidget* pLayer){
+            const auto& vForwards = pLayer->getForward();
+            auto it = std::find(vForwards.begin(), vForwards.end(), pChecking);
+            return it == vForwards.end();
+        });
+        if (bStart){
+            ++count;
+            pResult = pChecking;
+        }
+
+    }
+    switch(count){
+    case 1:
+        return pResult;
+    case 0:
+        throw std::runtime_error("circular dependensis");
+        return{};
+    default:
+        throw std::runtime_error("Too many roots");
+        return{};
+    }
+#elif 1 // solution with cheking how many roots. Roots stored in container(list or vector)    in worst O(N^2) speed O(N) memory   avarage O(N^2) speed O(N) memory
+    if(m_vLayers.size() == 1){
+        return m_vLayers.front();
+    }
+    std::list<NNLayerWidget*> ans;
+    for (const auto pChecking : m_vLayers){
+        bool bStart = std::all_of(m_vLayers.begin(), m_vLayers.end(), [pChecking](NNLayerWidget* pLayer){
+                const auto& vForwards = pLayer->getForward();
+                auto it = std::find(vForwards.begin(), vForwards.end(), pChecking);
+                return it == vForwards.end();
+    });
+        if (bStart)
+            ans.push_back(pChecking);
+    }
+    switch(ans.size()){
+    case 1:
+        return ans.front();
+    case 0:
+        throw std::runtime_error("circular dependensis");
+        return{};
+    default:
+        throw std::runtime_error("Too many roots");
+        return{};
+    }
+#elif 1 // solution with cheking how many roots. Not roots stored in unordered_set    in worst O(N^2) speed O(N) memory   avarage O(N^1,5) speed O(N) memory
+    if(m_vLayers.size() == 1){
+        return m_vLayers.front();
+    }
+    std::unordered_set<NNLayerWidget*> hasParent;
+    hasParent.reserve(m_vLayers.size());
+    std::for_each(m_vLayers.cbegin(), m_vLayers.cend(), [&hasParent](const auto pLayer){
+        const auto& vForwards = pLayer->getForward();
+        std::for_each(vForwards.cbegin(), vForwards.cend(), [&hasParent](const auto i){
+            hasParent.insert(i);
+        });
+    });
+    switch(m_vLayers.size() - hasParent.size()){
+    case 1:
+        return *std::find_if_not(m_vLayers.cbegin(), m_vLayers.cend(),
+                                 [&hasParent](const auto pLayer){return hasParent.find(pLayer) != hasParent.cend();});
+    case 0:
+        throw std::runtime_error("circular dependensis");
+        return{};
+    default:
+        throw std::runtime_error("Too many roots");
+        return{};
+    }
+#elif 1 // solution with cheking how many roots. Not roots stored in unordered_map    O(N^2) speed O(N) memory
+    if(m_vLayers.size() == 1){
+        return m_vLayers.front();
+    }
+    std::unordered_map<NNLayerWidget*, int> hasParent;
+    hasParent.reserve(m_vLayers.size());
+    std::for_each(m_vLayers.cbegin(), m_vLayers.cend(), [&hasParent](const auto pLayer){
+        const auto& vForwards = pLayer->getForward();
+        std::for_each(vForwards.cbegin(), vForwards.cend(), [&hasParent](const auto i){
+            ++hasParent[i];
+        });
+    });
+    switch(m_vLayers.size() - hasParent.size()){
+    case 1:
+        return *std::find_if_not(m_vLayers.cbegin(), m_vLayers.cend(),
+                                 [&hasParent](const auto pLayer){return hasParent.find(pLayer) != hasParent.cend();});
+    case 0:
+        throw std::runtime_error("circular dependensis");
+        return{};
+    default:
+        throw std::runtime_error("Too many roots");
+        return{};
+    }
+#else // solution with cheking how many roots. Not roots stored in unordered_map    O(N^2) speed O(N) memory
+    if(m_vLayers.size() == 1){
+        return m_vLayers.front();
+    }
+    std::unordered_map<NNLayerWidget*, int> hasParent;
+    hasParent.reserve(m_vLayers.size());
+    std::for_each(m_vLayers.cbegin(), m_vLayers.cend(), [&hasParent](const auto pLayer){
+        hasParent[pLayer] = 0;
+    });
+
+    std::for_each(m_vLayers.cbegin(), m_vLayers.cend(), [&hasParent](const auto pLayer){
+        const auto& vForwards = pLayer->getForward();
+        std::for_each(vForwards.cbegin(), vForwards.cend(), [&hasParent](const auto i){
+            ++hasParent[i];
+        });
+    });
+    auto sizeParent = std::count_if(hasParent.begin(), hasParent.end(), [&hasParent](const auto& it){return it.second == 0;});
+    switch(sizeParent){
+    case 1:
+        return *std::find_if_not(m_vLayers.cbegin(), m_vLayers.cend(),
+                                 [&hasParent](const auto pLayer){return hasParent[pLayer] != 0;});
+    case 0:
+        throw std::runtime_error("circular dependensis");
+        return{};
+    default:
+        throw std::runtime_error("Too many roots");
+        //std::vector<> ans;
+        //for_each(hasParent.begin(), hasParent.end(), [&hasParent, &ans](const auto& it){if(it.second == 0) ans.push_back(it.first);});
+        return{};
+    }
+#endif
+
 }
 
-void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc)
+void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc) const
 {
     std::set<NNLayerWidget*> VisitedSet;
 
@@ -339,7 +654,7 @@ void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_pr
 
     VisitedSet.insert(pStart);
 
-    while (!qToVisit.empty())
+    while(!qToVisit.empty())
     {
         auto pCurrent = qToVisit.front();
         qToVisit.pop();
@@ -349,7 +664,7 @@ void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_pr
 
         for (auto pNext : pCurrent->getForward())
         {
-            if (VisitedSet.count(pNext))
+            if (VisitedSet.find(pNext) != VisitedSet.cend())
                 continue;
 
             VisitedSet.insert(pNext);

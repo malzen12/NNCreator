@@ -13,6 +13,7 @@ public:
 
 private slots:
     void onWriteNetXml(const std::vector<NNParam>& vParams) const;
+    void onWriteNetPy(const std::vector<NNParam>& vParams) const;
     void onWriteTrainXml(const std::vector<NNParam>& vParams) const;
 
 private:
@@ -20,6 +21,7 @@ private:
     void createConnections();
 
     void writeXml(const std::string& strXmlPath, const std::string& strXmlBody) const;
+    void writePy(const std::string &strPyPath, const std::string &strPyBody) const;
 
     GlobalSettingsWidget* m_pGlobalSettingsWidget;
     ConstructorWidget* m_pConstructorWidget;

@@ -15,6 +15,7 @@ public:
 
     void setParams(const std::shared_ptr<NNLayerParams>& spParams) noexcept;
     const std::shared_ptr<NNLayerParams>& getParams() const noexcept;
+    const std::vector<std::size_t> &getInputSize() const;
 
     void deleteLayer();
 
@@ -34,6 +35,8 @@ public:
     void resetInputSize();
     void addInputSize(const std::vector<std::size_t>& vInputSize);
     std::vector<std::size_t> calcOutputSize() const;
+
+
 
 signals:
     void becomeActive(std::size_t);

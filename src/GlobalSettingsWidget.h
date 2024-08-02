@@ -17,11 +17,13 @@ public:
 signals:
     void inputSizeChanged(const std::vector<std::size_t>& );
     void makeNetXml(const std::vector<NNParam>& );
+    void makeNetPy(const std::vector<NNParam>& );
     void makeTrainXml(const std::vector<NNParam>& );
 
 private slots:
     void onUpdateInputSize();
     void onMakeNetXml();
+    void onMakeNetPy();
     void onMakeTrainXml();
 
 private:
@@ -34,6 +36,7 @@ private:
     QPushButton* m_pConfirmSizeButton;
     QGridLayout* m_pNetSettingsLayout;
     QPushButton* m_pMakeNetXmlButton;
+    QPushButton* m_pMakeNetPyButton;
 
     QGridLayout* m_pTrainSettingsLayout;
     QPushButton* m_pMakeTrainXmlButton;

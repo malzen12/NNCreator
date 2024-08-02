@@ -27,6 +27,7 @@ public:
     static std::shared_ptr<NNLayerParams> makeDropout();
     static std::shared_ptr<NNLayerParams> makeFlatten();
     static std::shared_ptr<NNLayerParams> makeRecurrent();
+    static std::shared_ptr<NNLayerParams> makeMyRecurrent();
 
     void setName(const std::string& strName) noexcept;
     const std::string& getName() const noexcept;
@@ -42,6 +43,7 @@ public:
     virtual std::vector<std::size_t> calcOutputSize(const std::vector<std::size_t>& vInputSize) const = 0;
 
     std::string makeXmlString() const;
+
 
 protected:
     std::string m_strName;

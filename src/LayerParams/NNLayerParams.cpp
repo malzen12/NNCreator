@@ -25,9 +25,7 @@
 NNLayerParams::NNLayerParams(const std::string& strName, const std::vector<NNParam>& vParams)
     : m_strName{strName},
       m_vParams{vParams}
-{
-
-}
+{}
 
 std::shared_ptr<NNLayerParams> NNLayerParams::makeLinear()
 {
@@ -165,7 +163,7 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeRecurrent()
 {
     auto strName = "Recurrent";
     std::vector<NNParam> vParams = {NNParam{Recurrent::getClassName(),
-                                            Recurrent{enu_recurrent::gru}.toString(),
+                                            Recurrent{enu_recurrent::rnn}.toString(),
                                             QVariant::Type::String, true},
                                     NNParam{"input_size", 0},
                                     NNParam{"hidden_size", 0},
@@ -174,6 +172,18 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeRecurrent()
                                     NNParam{"bidirectional", false, QVariant::Type::Bool}};
 
     return std::make_shared<RecurrentLayerParams>(strName, vParams);
+}
+
+std::shared_ptr<NNLayerParams> NNLayerParams::makeMyRecurrent()
+{
+    auto strName = "MyRecurrent";
+    std::vector<NNParam> vParams = {NNParam{"input_size", 0},
+                                    NNParam{"hidden_layers", 0},
+                                    NNParam{InitializerFunc::getClassName(),
+                                            InitializerFunc{static_cast<initializer_func>(0)}.toString(),
+                                            QVariant::Type::String, true}};
+
+    return std::make_shared<LinearLayerParams>(strName, vParams);
 }
 
 void NNLayerParams::setName(const std::string& strName) noexcept

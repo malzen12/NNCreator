@@ -78,6 +78,7 @@ void ParamsEditorWidget::initEditors()
 const std::shared_ptr<NNLayerParams>& ParamsEditorWidget::collectParams()
 {
     std::vector<NNParam> vParams;
+    vParams.reserve(m_pParamsLayout->count());
 
     for (auto i = 0; i < m_pParamsLayout->count(); ++i)
     {

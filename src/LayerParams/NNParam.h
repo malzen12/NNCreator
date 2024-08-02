@@ -16,6 +16,7 @@ public:
 
     std::string makeXmlString() const;
 
+    std::string makePyString() const;
 private:
     std::string m_strName;
     QVariant m_Value;

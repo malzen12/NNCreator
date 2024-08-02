@@ -14,7 +14,9 @@ class ConstructorWidget: public QWidget
 public:
     ConstructorWidget();
 
-    std::string makeXmlString();
+    std::string makeXmlString() const;
+    std::string makePyString() const;
+    bool isEmpty() const noexcept;
 
 signals:
     void paramsChanged(const std::shared_ptr<NNLayerParams>&);
@@ -44,9 +46,9 @@ private:
     void paintEvent(QPaintEvent* pEvent) final;
 
     void checkSizes();
-    NNLayerWidget* findStart();
+    NNLayerWidget* findStart() const;
 
-    void bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc);
+    void bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc) const;
 
 private:
     std::string m_strPath;

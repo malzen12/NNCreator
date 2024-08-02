@@ -2,13 +2,11 @@
 
 Normalization::Normalization(enu_normalization Type)
     : m_Type{Type}
-{
-
-}
+{}
 
 Normalization Normalization::fromString(const QString& qstrName)
 {
-    if ("BatchNorm1D" == qstrName)
+    if ("BatchNorm1d" == qstrName)
         return Normalization{enu_normalization::batchnorm1d};
     else if ("LayerNorm" == qstrName)
         return Normalization{enu_normalization::layernorm};
@@ -45,7 +43,7 @@ std::string Normalization::getClassName()
 QString Normalization::toString() const
 {
     if (enu_normalization::batchnorm1d == m_Type)
-        return "BatchNorm1D";
+        return "BatchNorm1d";
     else if (enu_normalization::layernorm == m_Type)
         return "LayerNorm";
     else
