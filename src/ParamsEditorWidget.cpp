@@ -37,12 +37,16 @@ void ParamsEditorWidget::initGUI()
   pButtonsLayout->addWidget(m_pConfirm);
   pButtonsLayout->addWidget(m_pDelete);
 
+  pButtonsLayout->setContentsMargins(0,0,0,0);
+
   auto pMainLayout = new QVBoxLayout{this};
 
   pMainLayout->addWidget(m_pNameLabel);
   pMainLayout->addLayout(m_pParamsLayout);
   pMainLayout->addLayout(pButtonsLayout);
   pMainLayout->addSpacerItem(new QSpacerItem{10, 10, QSizePolicy::Minimum, QSizePolicy::Expanding});
+
+  pMainLayout->setContentsMargins(0,0,0,0);
 }
 
 void ParamsEditorWidget::createConnections()

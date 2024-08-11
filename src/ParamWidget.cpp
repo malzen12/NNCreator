@@ -155,5 +155,7 @@ void ParamWidget::initGUI()
   pLayout->addWidget(m_pNameLabel);
   pLayout->addWidget(m_pEditorWidget);
 
+  pLayout->setContentsMargins(0,0,0,0);
+
   setAttribute(Qt::WA_DeleteOnClose);
 }
