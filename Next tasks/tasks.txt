@@ -13,3 +13,21 @@
 
 
 найти и поправить все падения/не обрабатываемые ошибки
+
+
+forward(x):
+	x = self.l1(x)
+	x1 = self.l2(x)
+	x2 = self.l2(x)
+	
+	x3 = self.l3(x1)
+	x4 = self.l3(x1)
+
+	x5 = self.concat(x2, x4)
+
+	x3 = self.asd1(x3)
+	x3 = self.asd2(x3)
+	x3 = self.asd3(x3)
+
+	x6 = self.concat(x3, x5)
+	return x6
