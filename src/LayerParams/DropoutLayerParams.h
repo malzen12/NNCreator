@@ -5,11 +5,11 @@
 class DropoutLayerParams : public NNLayerParams
 {
 public:
-    explicit DropoutLayerParams(const std::string& strName, const std::vector<NNParam>& vParams);
+  DropoutLayerParams(const std::string& strName, const std::vector<NNParam>& vParams);
 
-    QString getDisplayName() const noexcept final;
+  QString getDisplayName() const noexcept final;
 
-    bool checkInputSize(const std::vector<std::size_t>& vInputSize) const final;
-    std::vector<std::size_t> calcOutputSize(const std::vector<std::size_t>& vInputSize) const final;
+  bool checkInputSize(const std::vector<std::size_t>& vInputSize) const final;
+  std::vector<std::size_t> calcOutputSize(const std::vector<std::size_t>& vInputSize) const final;
 };
 

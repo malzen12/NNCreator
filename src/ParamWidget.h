@@ -7,20 +7,20 @@
 
 class ParamWidget : public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 public:
-    explicit ParamWidget(const NNParam& crParam);
+  explicit ParamWidget(const NNParam& crParam);
 
-    const std::string& getName() const noexcept;
+  const std::string& getName() const noexcept;
 
-    const NNParam& collectValue();
+  const NNParam& collectValue();
 
 private:
-    void initGUI();
+  void initGUI();
 
-    NNParam m_Param;
+  NNParam m_Param;
 
-    QLabel* m_pNameLabel;
-    QWidget* m_pEditorWidget;
+  QLabel* m_pNameLabel;
+  QWidget* m_pEditorWidget;
 };
 

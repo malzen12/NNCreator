@@ -6,25 +6,25 @@
 
 class MainWidget: public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    MainWidget();
+  MainWidget();
 
 private slots:
-    void onWriteNetXml(const std::vector<NNParam>& vParams) const;
-    void onWriteNetPy(const std::vector<NNParam>& vParams) const;
-    void onWriteTrainXml(const std::vector<NNParam>& vParams) const;
+  void onWriteNetXml(const std::vector<NNParam>& vParams) const;
+  void onWriteNetPy(const std::vector<NNParam>& vParams) const;
+  void onWriteTrainXml(const std::vector<NNParam>& vParams) const;
 
 private:
-    void initGUI();
-    void createConnections();
+  void initGUI();
+  void createConnections();
 
-    void writeXml(const std::string& strXmlPath, const std::string& strXmlBody) const;
-    void writePy(const std::string &strPyPath, const std::string &strPyBody) const;
+  void writeXml(const std::string& strXmlPath, const std::string& strXmlBody) const;
+  void writePy(const std::string &strPyPath, const std::string &strPyBody) const;
 
-    GlobalSettingsWidget* m_pGlobalSettingsWidget;
-    ConstructorWidget* m_pConstructorWidget;
-    ParamsEditorWidget* m_pSettingsEdit;
+  GlobalSettingsWidget* m_pGlobalSettingsWidget;
+  ConstructorWidget* m_pConstructorWidget;
+  ParamsEditorWidget* m_pSettingsEdit;
 };
 

@@ -7,29 +7,29 @@
 
 enum class initializer_func
 {
-    xavier = 0,
-    uniform,
-    normal,
-    dirac,
-    kaiming_normal,
-    cnt
+  xavier = 0,
+  uniform,
+  normal,
+  dirac,
+  kaiming_normal,
+  cnt
 };
 
 class InitializerFunc
 {
 public:
-    explicit InitializerFunc(initializer_func Type);
+  explicit InitializerFunc(initializer_func Type);
 
-    static InitializerFunc fromString(const QString& qstrName);
+  static InitializerFunc fromString(const QString& qstrName);
 
-    static QStringList getAllNames();
-    static std::vector<initializer_func> getAllValues();
+  static QStringList getAllNames();
+  static std::vector<initializer_func> getAllValues();
 
-    static std::string getClassName();
+  static std::string getClassName();
 
-    QString toString() const;
+  QString toString() const;
 
 private:
-    initializer_func m_Type;
+  initializer_func m_Type;
 };
 

@@ -7,27 +7,27 @@
 
 enum class enu_recurrent
 {
-    rnn = 0,
-    lstm,
-    gru,
-    cnt
+  rnn = 0,
+  lstm,
+  gru,
+  cnt
 };
 
 class Recurrent
 {
 public:
-    explicit Recurrent(enu_recurrent Type);
+  explicit Recurrent(enu_recurrent Type);
 
-    static Recurrent fromString(const QString& qstrName);
+  static Recurrent fromString(const QString& qstrName);
 
-    static QStringList getAllNames();
-    static std::vector<enu_recurrent> getAllValues();
+  static QStringList getAllNames();
+  static std::vector<enu_recurrent> getAllValues();
 
-    static std::string getClassName();
+  static std::string getClassName();
 
-    QString toString() const;
+  QString toString() const;
 
 private:
-    enu_recurrent m_Type;
+  enu_recurrent m_Type;
 };
 

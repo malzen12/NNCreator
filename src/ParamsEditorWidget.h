@@ -9,35 +9,35 @@
 
 class ParamsEditorWidget: public QWidget
 {
-    Q_OBJECT
+  Q_OBJECT
 
 public:
-    ParamsEditorWidget();
+  ParamsEditorWidget();
 
 public slots:
-    void onSetParams(const std::shared_ptr<NNLayerParams>& spParams);
+  void onSetParams(const std::shared_ptr<NNLayerParams>& spParams);
 
 signals:
-    void paramsChanged(const std::shared_ptr<NNLayerParams>& crParams);
-    void deleteActive();
+  void paramsChanged(const std::shared_ptr<NNLayerParams>& crParams);
+  void deleteActive();
 
 private slots:
-    void onConfirmParams();
+  void onConfirmParams();
 
 private:
-    void initGUI();
-    void createConnections();
+  void initGUI();
+  void createConnections();
 
-    void initEditors();
-    const std::shared_ptr<NNLayerParams>& collectParams();
+  void initEditors();
+  const std::shared_ptr<NNLayerParams>& collectParams();
 
 
-    QLabel* m_pNameLabel;
+  QLabel* m_pNameLabel;
 
-    QVBoxLayout* m_pParamsLayout;
+  QVBoxLayout* m_pParamsLayout;
 
-    QPushButton* m_pConfirm;
-    QPushButton* m_pDelete;
+  QPushButton* m_pConfirm;
+  QPushButton* m_pDelete;
 
-    std::shared_ptr<NNLayerParams> m_spParams;
+  std::shared_ptr<NNLayerParams> m_spParams;
 };

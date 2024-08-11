@@ -7,25 +7,25 @@
 
 enum class enu_normalization
 {
-    batchnorm1d = 0,
-    layernorm,
-    cnt
+  batchnorm1d = 0,
+  layernorm,
+  cnt
 };
 
 class Normalization
 {
 public:
-    explicit Normalization(enu_normalization Type);
+  explicit Normalization(enu_normalization Type);
 
-    static Normalization fromString(const QString& qstrName);
+  static Normalization fromString(const QString& qstrName);
 
-    static QStringList getAllNames();
-    static std::vector<enu_normalization> getAllValues();
+  static QStringList getAllNames();
+  static std::vector<enu_normalization> getAllValues();
 
-    static std::string getClassName();
+  static std::string getClassName();
 
-    QString toString() const;
+  QString toString() const;
 
 private:
-    enu_normalization m_Type;
+  enu_normalization m_Type;
 };
