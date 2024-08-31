@@ -12,19 +12,21 @@ Conv2dLayerParams::Conv2dLayerParams(const std::string& strName, const std::vect
   assert(m_vParams.size() >= 6);
 }
 
-bool Conv2dLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
+bool Conv2dLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
   auto lKernel = m_vParams[2].getValue().toList();
   auto sInDepth = m_vParams[0].getValue().toUInt();
 
+  auto& vInputSize = vInputSizes.front();
   return vInputSize.size() > 2
       && vInputSize[vInputSize.size() - 1] > lKernel[1].toUInt()
       && vInputSize[vInputSize.size() - 2] > lKernel[0].toUInt()
       && vInputSize[vInputSize.size() - 3] == sInDepth;
 }
 
-std::vector<std::size_t> Conv2dLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
+std::vector<std::size_t> Conv2dLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   assert(vInputSize.size() > 1);
 
   auto sOutDepth = m_vParams[1].getValue().toUInt();
@@ -34,7 +36,9 @@ std::vector<std::size_t> Conv2dLayerParams::calcOutputSize(const std::vector<std
   auto lPadding = m_vParams[4].getValue().toList();
   auto lDilitation = m_vParams[5].getValue().toList();
 
+
   auto vRes = vInputSize;
+
   vRes.back() = calc_output_axis(vInputSize.back(),
                                  lKernel[1].toUInt(), lStride[1].toUInt(),
                                  lPadding[1].toUInt(), lDilitation[1].toUInt());

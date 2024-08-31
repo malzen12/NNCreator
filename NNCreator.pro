@@ -26,7 +26,6 @@ SOURCES += \
     $$PWD/src/LayerParams/NNParam.cpp \
     $$PWD/src/LayerParams/NNLayerParams.cpp \
     $$PWD/src/LayerParams/ActivationLayerParams.cpp \
-    $$PWD/src/LayerParams/ConcatinateLayerParams.cpp \
     $$PWD/src/LayerParams/Conv1dLayerParams.cpp \
     $$PWD/src/LayerParams/DropoutLayerParams.cpp \
     $$PWD/src/LayerParams/EmbeddingLayerParams.cpp \
@@ -35,10 +34,16 @@ SOURCES += \
     $$PWD/src/LayerParams/PoolLayerParams.cpp \
     $$PWD/src/LayerParams/ReshapeLayerParams.cpp \
     $$PWD/src/LayerParams/Conv2dLayerParams.cpp \
-    src/EnumParams/Recurrent.cpp \
-    src/LayerParams/FlattenLayerParams.cpp \
-    src/LayerParams/Pool2dLayerParams.cpp \
-    src/LayerParams/RecurrentLayerParams.cpp
+    $$PWD/src/EnumParams/Recurrent.cpp \
+    $$PWD/src/LayerParams/FlattenLayerParams.cpp \
+    $$PWD/src/LayerParams/Pool2dLayerParams.cpp \
+    $$PWD/src/LayerParams/RecurrentLayerParams.cpp \
+    $$PWD/src/EnumParams/PaddingMode.cpp \
+    $$PWD/src/LayerParams/BilinearLayerParams.cpp \
+    $$PWD/src/Branch.cpp \
+    $$PWD/src/ConstructorWidgetHelper.cpp \
+    $$PWD/src/ConstructorWorkSpace.cpp
+
 
 HEADERS += \
     $$PWD/src/ConstructorWidget.h \
@@ -56,7 +61,6 @@ HEADERS += \
     $$PWD/src/LayerParams/NNParam.h \
     $$PWD/src/LayerParams/NNLayerParams.h \
     $$PWD/src/LayerParams/ActivationLayerParams.h \
-    $$PWD/src/LayerParams/ConcatinateLayerParams.h \
     $$PWD/src/LayerParams/Conv1dLayerParams.h \
     $$PWD/src/LayerParams/DropoutLayerParams.h \
     $$PWD/src/LayerParams/EmbeddingLayerParams.h \
@@ -65,7 +69,13 @@ HEADERS += \
     $$PWD/src/LayerParams/PoolLayerParams.h \
     $$PWD/src/LayerParams/ReshapeLayerParams.h \
     $$PWD/src/LayerParams/Conv2dLayerParams.h \
-    src/EnumParams/Recurrent.h \
-    src/LayerParams/FlattenLayerParams.h \
-    src/LayerParams/Pool2dLayerParams.h \
-    src/LayerParams/RecurrentLayerParams.h
+    $$PWD/src/EnumParams/Recurrent.h \
+    $$PWD/src/LayerParams/FlattenLayerParams.h \
+    $$PWD/src/LayerParams/Pool2dLayerParams.h \
+    $$PWD/src/LayerParams/RecurrentLayerParams.h \
+    $$PWD/src/EnumParams/PaddingMode.h \
+    $$PWD/src/LayerParams/BilinearLayerParams.h \
+    $$PWD/src/Branch.h \
+    $$PWD/src/ConstructorWidgetHelper.h \
+    $$PWD/src/ConstructorWorkSpace.h
+

@@ -4,8 +4,10 @@
 #include <QLineEdit>
 #include <QPushButton>
 #include <QGridLayout>
+#include <QLabel>
 
 #include "LayerParams/NNParam.h"
+
 
 class GlobalSettingsWidget: public QWidget
 {
@@ -19,13 +21,14 @@ signals:
   void makeNetXml(const std::vector<NNParam>& );
   void makeNetPy(const std::vector<NNParam>& );
   void makeTrainXml(const std::vector<NNParam>& );
+  void isValid();
+  void notValid(const std::string&);
 
 private slots:
   void onUpdateInputSize();
   void onMakeNetXml();
   void onMakeNetPy();
   void onMakeTrainXml();
-
 private:
   void initGUI();
   void createConnections();
@@ -33,12 +36,14 @@ private:
   std::vector<NNParam> collectParams(QGridLayout* pLayout);
   NNParam collectInputSize();
 
-  QPushButton* m_pConfirmSizeButton;
-  QGridLayout* m_pNetSettingsLayout;
-  QPushButton* m_pMakeNetXmlButton;
-  QPushButton* m_pMakeNetPyButton;
-
   QGridLayout* m_pTrainSettingsLayout;
   QPushButton* m_pMakeTrainXmlButton;
+
+  QGridLayout* m_pNetSettingsLayout;
+  QPushButton* m_pConfirmSizeButton;
+  QLabel* m_pMakeNetLabel;
+  QPushButton* m_pMakeNetXmlButton;
+  QPushButton* m_pMakeNetPyButton;
+  QPushButton* m_pIsValidButton;
 };
 

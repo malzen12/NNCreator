@@ -10,6 +10,7 @@
 #include "PaddingMode.h"
 
 #include "LinearLayerParams.h"
+#include "BilinearLayerParams.h"
 #include "Conv1dLayerParams.h"
 #include "Conv2dLayerParams.h"
 #include "PoolLayerParams.h"
@@ -17,7 +18,6 @@
 #include "ReshapeLayerParams.h"
 #include "NormalizationLayerParams.h"
 #include "ActivationLayerParams.h"
-#include "ConcatinateLayerParams.h"
 #include "Pool2dLayerParams.h"
 #include "DropoutLayerParams.h"
 #include "FlattenLayerParams.h"
@@ -27,11 +27,10 @@ NNLayerParams::NNLayerParams(const std::string& strName, const std::vector<NNPar
   : m_strName{strName},
     m_vParams{vParams}
 {}
-
+//in_features, out_features, bias=True
 std::shared_ptr<NNLayerParams> NNLayerParams::makeLinear()
 {
   auto strName = "Linear";
-  //in_features, out_features, bias=True
   std::vector<NNParam> vParams = {NNParam{"Input I[*,?]", "in_features", 0},
                                   NNParam{"Output O[*,?]", "out_features", 0},
                                   NNParam{"Bias", "bias", true, QVariant::Type::Bool},
@@ -41,6 +40,22 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeLinear()
                                           QVariant::Type::String, true}};
 
   return std::make_shared<LinearLayerParams>(strName, vParams);
+}
+//in1_features, in2_features, out_features, bias=True
+std::shared_ptr<NNLayerParams> NNLayerParams::makeBilinear()
+{
+  auto strName = "Bilinear";
+
+  std::vector<NNParam> vParams = {NNParam{"Input 1 I[*,?]", "in1_features", 0},
+                                  NNParam{"Input 2 I[*,?]", "in2_features", 0},
+                                  NNParam{"Output O[*,?]", "out_features", 0},
+                                  NNParam{"Bias", "bias", true, QVariant::Type::Bool},
+                                  NNParam{"Initializer Func",
+                                          InitializerFunc::getClassName(),
+                                          InitializerFunc{static_cast<initializer_func>(0)}.toString(),
+                                          QVariant::Type::String, true}};
+
+  return std::make_shared<BilinearLayerParams>(strName, vParams);
 }
 //in_channels, out_channels, kernel_size,
 //stride=1, padding=0, dilation=1, groups=1, bias=True, padding_mode='zeros'
@@ -155,14 +170,6 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeActivation()
                                           QVariant::Type::String, true}};
 
   return std::make_shared<ActivationLayerParams>(strName, vParams);
-}
-
-std::shared_ptr<NNLayerParams> NNLayerParams::makeConcatinate()
-{
-  auto strName = "Concatinate";
-  std::vector<NNParam> vParams = {NNParam{"axis", 0}};
-
-  return std::make_shared<ConcatinateLayerParams>(strName, vParams);
 }
 
 std::shared_ptr<NNLayerParams> NNLayerParams::makeDropout()

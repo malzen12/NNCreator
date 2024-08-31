@@ -11,13 +11,15 @@ QString NormalizationLayerParams::getDisplayName() const noexcept
   return m_vParams[0].getValue().toString();
 }
 
-bool NormalizationLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
+bool NormalizationLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   return !vInputSize.empty();
 }
 
-std::vector<std::size_t> NormalizationLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
+std::vector<std::size_t> NormalizationLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   return vInputSize;
 }
 

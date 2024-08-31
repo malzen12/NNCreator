@@ -11,13 +11,15 @@ QString DropoutLayerParams::getDisplayName() const noexcept
   return m_vParams[0].getValue().toString();
 }
 
-bool DropoutLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
+bool DropoutLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   return !vInputSize.empty();
 }
 
-std::vector<std::size_t> DropoutLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
+std::vector<std::size_t> DropoutLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   return vInputSize;
 }
 

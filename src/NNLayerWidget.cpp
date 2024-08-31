@@ -1,12 +1,14 @@
 #include "NNLayerWidget.h"
 
+
 #include <iostream>
 
 #include <QMenu>
 #include <QMouseEvent>
 #include <QVBoxLayout>
 
-static const QString c_qstrDeleteActionName = "delete layer";
+#include <QShortcut>
+#include <QApplication>
 
 QColor make_color(bool bActive, bool bValid)
 {
@@ -16,7 +18,7 @@ QColor make_color(bool bActive, bool bValid)
     return bActive?  QColor{200, 200, 125} : QColor{255, 125, 125};
 }
 
-QString make_size_string(const std::vector<std::size_t>& vSize)
+QString make_size_string(const std::vector<std::size_t>& vSize = {})
 {
   QString qstrRes = "[";
   for (auto sSize : vSize)
@@ -31,11 +33,27 @@ NNLayerWidget::NNLayerWidget(std::size_t sId, const std::shared_ptr<NNLayerParam
     m_bGrabbed{false},
     m_spParams{spParams},
     m_bValidParams{true},
-    m_pInputLabel{new QLabel{make_size_string(m_vInputSize)}},
-    m_pNameLabel{new QLabel{m_spParams->getDisplayName()}},
+     //////////// doSomthing
+    m_pNameLabel{new QLabel{m_spParams->getDisplayName() + " " + QString::number(sId)}},
     m_pOutputLabel{new QLabel{make_size_string({})}}
 {
   setAttribute(Qt::WA_DeleteOnClose);
+  if(m_vInputSizes.empty()){
+    if(m_spParams->getName() != "Bilinear"){
+      m_pInputLabel  = new QLabel{make_size_string()};
+    }else{
+      QString str = make_size_string() + "\n" + make_size_string();
+      m_pInputLabel = new QLabel{str};
+    }
+  }else{
+    if(m_spParams->getName() != "Bilinear"){
+      m_pInputLabel  = new QLabel{make_size_string(m_vInputSizes.front())};
+    }else{
+      m_pInputLabel = new QLabel{make_size_string(m_vInputSizes.front())
+                      + "\n" + make_size_string(m_vInputSizes.back())};
+    }
+  }
+
 
   initGUI();
 }
@@ -66,18 +84,43 @@ bool NNLayerWidget::isGrabbed() const
   return m_bGrabbed;
 }
 
+bool NNLayerWidget::isActive() const
+{
+  return m_bActive;
+}
+
 void NNLayerWidget::mousePressEvent(QMouseEvent* pEvent)
 {
-  if (pEvent->button() == Qt::LeftButton)
-  {
-    m_bGrabbed = true;
-    m_GrabbedPos = pEvent->pos();
-    makeActive(true);
+  auto modif = QGuiApplication::keyboardModifiers();
+  if(Qt::NoModifier == modif){
+    if (pEvent->button() == Qt::LeftButton){
+      m_bGrabbed = true;
+      m_GrabbedPos = pEvent->pos();
+      if(!m_bActive)
+        makeActive(true);
+    }else if (pEvent->button() == Qt::RightButton){
+      emit makeForward(m_sId);
+    }
+  }else if(modif.testFlag(Qt::ControlModifier)){
+    if (pEvent->button() == Qt::LeftButton){
+      m_bGrabbed = true;
+      m_GrabbedPos = pEvent->pos();
+      m_bActive = !m_bActive;
+      updateStyle();
+      std::cout << "ctrl+left_click" <<std::endl;
+      if(m_bActive)
+        emit addToActive(m_sId);
+      else
+        emit delFromActive(m_sId);
+    }
   }
-  else if (pEvent->button() == Qt::RightButton)
-  {
-    emit makeForward(m_sId);
-  }
+}
+
+void NNLayerWidget::toActive()
+{
+  m_bActive = true;
+  updateStyle();
+  emit addToActive(m_sId);
 }
 
 void NNLayerWidget::mouseReleaseEvent(QMouseEvent* /*pEvent*/)
@@ -123,35 +166,27 @@ const std::vector<NNLayerWidget*>& NNLayerWidget::getForward() const noexcept
 
 void NNLayerWidget::resetInputSize()
 {
-  m_vInputSize.clear();
+  m_vInputSizes.clear();
 }
 
 void NNLayerWidget::addInputSize(const std::vector<std::size_t>& vInputSize) ///< @todo
 {
   if (vInputSize.empty()){
     m_bValidParams = false;
-    updateStyle();
   }
   else{
-    m_bValidParams = m_spParams->checkInputSize(vInputSize);
-
-    if (m_spParams->getName() == "Concatinate" && m_bValidParams && !m_vInputSize.empty())    {
-      auto sAxis = m_spParams->getParams()[0].getValue().toUInt();
-      m_vInputSize[sAxis] += vInputSize[sAxis];
-    }
-    else
-      m_vInputSize = vInputSize;
-
-    updateStyle();
+    m_vInputSizes.push_back(vInputSize);
+    m_bValidParams = m_spParams->checkInputSize(m_vInputSizes);
   }
+  updateStyle();
 }
 
 std::vector<std::size_t> NNLayerWidget::calcOutputSize() const
 {
-  if (m_vInputSize.empty())
+  if (m_vInputSizes.empty())
     return {};
 
-  return m_spParams->calcOutputSize(m_vInputSize);
+  return m_spParams->calcOutputSize(m_vInputSizes);
 }
 
 void NNLayerWidget::initGUI()
@@ -163,6 +198,10 @@ void NNLayerWidget::initGUI()
   makeActive(true);
 
   auto pLayout = new QVBoxLayout{this};
+
+  m_pInputLabel->setAlignment(Qt::AlignHCenter);
+  m_pNameLabel->setAlignment(Qt::AlignHCenter);
+  m_pOutputLabel->setAlignment(Qt::AlignHCenter);
 
   pLayout->addWidget(m_pInputLabel);
   pLayout->addWidget(m_pNameLabel);
@@ -182,22 +221,33 @@ void NNLayerWidget::updateStyle()
   Palette.setColor(QPalette::Button, Color);
   setPalette(Palette);
 
-  m_pInputLabel->setText(make_size_string(m_vInputSize));
+  auto sMaxSize = -1;
+  if(m_vInputSizes.empty()){
+    m_pInputLabel->setText(make_size_string());
+  }else if(m_vInputSizes.size() == 1){
+    m_pInputLabel->setText(make_size_string(m_vInputSizes.front()));
+  }else if(m_vInputSizes.size() == 2){
+    QString str = make_size_string(m_vInputSizes.front()) + make_size_string(m_vInputSizes.back());
+    m_pInputLabel->setText(str);
+  }
 
-  if (!m_vInputSize.empty())
+  if (!m_vInputSizes.empty())
     m_pOutputLabel->setText(make_size_string(calcOutputSize()));
+  else
+    m_pOutputLabel->setText(make_size_string());
 
   auto sInputStrSize = fontMetrics().horizontalAdvance(m_pInputLabel->text());
   auto sNameStrSize = fontMetrics().horizontalAdvance(m_pNameLabel->text());
   auto sOutputStrSize = fontMetrics().horizontalAdvance(m_pOutputLabel->text());
 
-  auto sMaxSize = std::max(sInputStrSize, sNameStrSize);
+  sMaxSize = std::max(sMaxSize, sInputStrSize);
+  sMaxSize = std::max(sMaxSize, sNameStrSize);
   sMaxSize = std::max(sMaxSize, sOutputStrSize);
 
   setFixedWidth(sMaxSize + 5 * 2);
 }
 
-const std::vector<std::size_t> &NNLayerWidget::getInputSize() const
+const std::vector<std::vector<std::size_t>> &NNLayerWidget::getInputSize() const
 {
-  return m_vInputSize;
+  return m_vInputSizes;
 }

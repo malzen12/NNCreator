@@ -11,12 +11,13 @@ QString ActivationLayerParams::getDisplayName() const noexcept
   return m_vParams.front().getValue().toString();
 }
 
-bool ActivationLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
+bool ActivationLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
-  return !vInputSize.empty();
+  return !vInputSizes.empty();
 }
 
-std::vector<std::size_t> ActivationLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
+std::vector<std::size_t> ActivationLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   return vInputSize;
 }

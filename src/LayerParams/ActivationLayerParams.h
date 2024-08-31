@@ -9,7 +9,7 @@ public:
 
   QString getDisplayName() const noexcept final;
 
-  bool checkInputSize(const std::vector<std::size_t>& vInputSize) const final;
-  std::vector<std::size_t> calcOutputSize(const std::vector<std::size_t>& vInputSize) const final;
+  bool checkInputSize(const InputSizeType& vInputSizes) const final;
+  std::vector<std::size_t> calcOutputSize(const InputSizeType& vInputSizes) const final;
 };
 

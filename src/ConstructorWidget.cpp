@@ -4,28 +4,35 @@
 #include <queue>
 #include <set>
 #include <unordered_set>
+#include <unordered_map>
 
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPainter>
 
+
+#include <iostream>
+#include <QShortcut>
+
+#include "Branch.h"
+
 static std::size_t get_increment()
 {
   static std::size_t sIncrement = 0;
-  return ++sIncrement;
+  return sIncrement++;
 }
 
-NNLayerWidget* get_layer(std::size_t sId, std::vector<NNLayerWidget*> vLayers)
+NNLayerWidget* get_layer(std::size_t sId, std::unordered_map<std::size_t, NNLayerWidget*> vLayers)
 {
   auto itLayer = std::find_if(vLayers.begin(), vLayers.end(),
-                              [sId](NNLayerWidget* pWdg){
-                                return pWdg->getId() == sId;
+                              [sId](const auto pWdg){
+                                return pWdg.second->getId() == sId;
                               });
 
   if (vLayers.end() == itLayer)
-    throw std::runtime_error("invalid id passed");
+    throw std::runtime_error("invalid id passed _get_layer_");
 
-  return *itLayer;
+  return itLayer->second;
 }
 
 void print_params(const std::string& strParam, const std::string& strTag, std::stringstream& rStream)
@@ -48,9 +55,22 @@ void print_params(const std::vector<std::size_t>& vParams, const std::string& st
   rStream << "</" << strTag << ">" << std::endl;
 }
 
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 ConstructorWidget::ConstructorWidget()
-  : m_pMenu{new QMenu{this}},
-    m_sActive{0}
+  : m_pMenu{new QMenu{this}}
 {
   initGUI();
   createConnections();
@@ -60,16 +80,13 @@ ConstructorWidget::ConstructorWidget()
 
 std::string ConstructorWidget::makeXmlString() const
 {
-  auto pStart = findStart();
-
   std::stringstream Stream;
   print_params(m_vInputSize, "data_size", Stream);
 
   Stream << "<layers>" << '\n';
-  bfs(pStart, [&Stream](NNLayerWidget* pCurrent, NNLayerWidget* /*pNext*/)
-  {
+  for(const auto [id, pCurrent]: m_vLayers){
     Stream << "<l>" << std::endl;
-    print_params(pCurrent->getId(), "id", Stream);
+    print_params(id, "id", Stream);
 
     Stream << pCurrent->getParams()->makeXmlString();
 
@@ -79,229 +96,19 @@ std::string ConstructorWidget::makeXmlString() const
     Stream << "</forwards>" << '\n';
 
     Stream << "</l>" << '\n';
-  }, {});
+  }
   Stream << "</layers>" << std::endl;
 
   return Stream.str();
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-const std::string createName(const NNLayerWidget* pParam){
-  std::stringstream Stream;
-  Stream << "self." << pParam->getParams()->getName()
-         << "_" << std::to_string(pParam->getId());
-  return  Stream.str();
-};
-
-const std::string createNameEnum(const NNLayerWidget* pParam){
-  std::stringstream Stream;
-  Stream << "self." << pParam->getParams()->getDisplayName().toStdString()
-         << "_" << std::to_string(pParam->getId());
-  return  Stream.str();
-};
-
-const std::string createNameMyRecurrent(const NNLayerWidget* pParam){
-  std::stringstream Stream;
-  Stream<< "self." << "Linear"
-        << "_" << std::to_string(pParam->getId()) << "h";
-  return  Stream.str();
-};
-
-
-class PyPrinter{
-public:
-  template<class T>
-  std::stringstream& operator<<(T t){
-    Stream << std::string(tab, '\t') << t;
-    return Stream;
-  }
-
-  template<class T>
-  void addToLine(T t){
-    Stream << t;
-  }
-
-  void endl(){
-    Stream << std::endl;
-  }
-
-  std::stringstream& getStreamRef(){
-    return Stream;
-  }
-
-  PyPrinter& operator++(){
-    ++tab;
-    return *this;
-  }
-  PyPrinter& operator--(){
-    --tab;
-    return *this;
-  }
-private:
-  std::stringstream Stream{};
-  int tab{};
-};
-
-void createInitLValue (const NNLayerWidget* pCurrent, PyPrinter& pyPrinter){
-  bool isEnum = pCurrent->getParams()->getParams().front().isEnum();
-  if(!isEnum){
-    if(pCurrent->getParams()->getName() == "MyRecurrent"){
-      pyPrinter << createNameMyRecurrent(pCurrent) << '\n';
-    }else{
-      pyPrinter << createName(pCurrent);
-    }
-  }
-  else{
-    auto enamName = pCurrent->getParams()->getParams().front().getName();
-    if(enamName == "Recurrent"){
-      pyPrinter << createNameEnum(pCurrent);
-    }else if(enamName == "Normalization"){
-      return;
-    }
-  }
-};
-
-void createInitRValue (const NNLayerWidget* pCurrent, std::stringstream& Stream){
-  bool isEnum = pCurrent->getParams()->getParams().front().isEnum();
-  if(!isEnum){
-    if(pCurrent->getParams()->getName() == "MyRecurrent"){
-      Stream << " = nn."
-             << "Linear"
-             << "(";
-      auto it = pCurrent->getParams()->getParams().cbegin();
-      Stream << it->makePyString()
-             << ", "
-             << it->makePyString()
-             << ")\n";
-    }else{
-      auto enamName = pCurrent->getParams()->getParams().front().getName();
-      if(enamName == "Normalization"){
-        return;
-      }
-      Stream << " = nn."
-             << pCurrent->getParams()->getName()
-             << "(";
-      auto it = pCurrent->getParams()->getParams().cbegin();
-      Stream << it->getHiddenName()
-             << '='
-             << it->makePyString();
-      ++it;
-      for(auto ite = pCurrent->getParams()->getParams().cend(); std::next(it) != ite; ++it){
-        Stream << ", "
-               << it->getHiddenName()
-               << '='
-               << it->makePyString();
-      }
-      Stream << ")\n";
-    }
-  }
-  else{
-    Stream << " = nn."
-           << pCurrent->getParams()->getParams().front().getValue().toString().toStdString()
-           << "(";
-    auto it = pCurrent->getParams()->getParams().cbegin();
-    Stream << it++->makePyString() << ", ";
-    Stream << it++->makePyString() << ", ";
-    Stream << it++->makePyString() << ", ";
-    if(pCurrent->getParams()->getParams().front().getValue() == "RNN")
-      Stream << R"('tanh')" << ", ";
-    Stream << it++->makePyString() << ", ";
-    Stream << R"(False, 0.0)" << ", ";
-    Stream << it->makePyString();
-    Stream << ")\n";
-  }
-};
-
-void createNameForward(const NNLayerWidget* pParam, PyPrinter& pyPrinter){
-  bool isEnum = pParam->getParams()->getParams().front().isEnum();
-  if(!isEnum){
-    if(pParam->getParams()->getName() == "MyRecurrent"){
-      int n = std::next(pParam->getParams()->getParams().crbegin())->getValue().toInt();
-      for(int i = 0; i < n; ++i ){
-        pyPrinter << "x = "
-                  << createNameMyRecurrent(pParam)
-                  << "(x)" << '\n';
-      }
-    }else{
-      pyPrinter << "x = "
-                << createName(pParam)
-                << "(x)" << '\n';
-    }
-
-  }else{
-    auto enamName = pParam->getParams()->getParams().cbegin()->getName();
-    if(enamName == "Recurrent"){
-      pyPrinter << "x, y = "
-                << createNameEnum(pParam)
-                << "(x)" << '\n';
-    }else if(enamName == "Normalization"){
-      pyPrinter << createNameEnum(pParam)
-                << " = nn."
-                << pParam->getParams()->getParams().front().getValue().toString().toStdString()
-                << R"((x.size()))" << '\n';
-      pyPrinter << "x = "
-                << createNameEnum(pParam)
-                << "(x)" << '\n';
-    }
-  }
-};
-
-
-std::string ConstructorWidget::makePyString() const
+std::string ConstructorWidget::makePyString()
 {
-  auto pStart = findStart();
-
-  PyPrinter pyPrinter{};
-
-  pyPrinter << R"(class Net(nn.Module):)" << '\n';
-  ++pyPrinter << R"(def __init__(self):)" << '\n';
-  ++pyPrinter << R"(super().__init__())" << '\n';
-
-  for(const auto& pCurrent: m_vLayers){
-    createInitLValue(pCurrent, pyPrinter);
-    createInitRValue(pCurrent, pyPrinter.getStreamRef());
-  }
-  pyPrinter.endl();
-
-  --pyPrinter << R"(def forward(self, x):)" << '\n';
-  ++pyPrinter;
-
-  createNameForward(pStart, pyPrinter);
-
-  bfs(pStart, [&pyPrinter](NNLayerWidget* pCurrent, NNLayerWidget* /*pNext*/)
-  {
-    for(auto pLayer : pCurrent->getForward()){
-      createNameForward(pLayer, pyPrinter);
-    }
-  }, {});
-
-  pyPrinter << R"(return x)" << '\n';;
-
-  return pyPrinter.getStreamRef().str();
+  emit startCalculation();
+  auto result{graph.print()};
+  emit compliteCalculation();
+  return result;
 }
-
-
-
-
-
-
-
-
-
-
-
-
 
 
 bool ConstructorWidget::isEmpty () const noexcept
@@ -311,83 +118,100 @@ bool ConstructorWidget::isEmpty () const noexcept
 
 void ConstructorWidget::onSetParams(const std::shared_ptr<NNLayerParams>& spParams)
 {
-  auto pLayerWidget = get_layer(m_sActive, m_vLayers);
+  emit startCalculation();
+  auto active = *m_ActiveSet.cbegin();
+  auto pLayerWidget = m_vLayers[active];
 
   pLayerWidget->setParams(spParams);
 
   checkSizes();
+  m_pWorkSpace->update();
+  emit compliteCalculation();
 }
 
 void ConstructorWidget::onDeleteActive()
 {
+  emit startCalculation();
   if (m_vLayers.empty())
     return ;
 
-  auto pDeletingLayer = get_layer(m_sActive, m_vLayers);
+  for(const auto active : m_ActiveSet){
+    auto pDeletingLayer = m_vLayers[active];
 
-  for (auto pLayer : m_vLayers)
-    pLayer->removeForward(pDeletingLayer);
+    for (auto [_, pLayer] : m_vLayers)
+      pLayer->removeForward(pDeletingLayer);
 
-  pDeletingLayer->deleteLayer();
+    pDeletingLayer->deleteLayer();
+    graph.deleteVertex(active);
+    m_vLayers.erase(active);
+    onDelFromActive(active);
+  }
+  if(!m_vLayers.empty()){
+    m_ActiveSet.insert(m_vLayers.cbegin()->first);
+    makeActive(m_vLayers.cbegin()->first, true);
+  }
 
-  auto itLayer = std::find(m_vLayers.begin(), m_vLayers.end(), pDeletingLayer);
-
-  if (m_vLayers.end() == itLayer)
-    throw std::runtime_error("invalid id passed");
-
-  m_vLayers.erase(itLayer);
-
-  ///< @todo disconnect
-
-  m_sActive = m_vLayers.front()->getId();
-
-  update();
+  checkSizes();
+  m_pWorkSpace->update();
+  emit compliteCalculation();
 }
+
+void ConstructorWidget::onDeleteEdge(std::size_t sId)
+{
+  emit startCalculation();
+  if (m_vLayers.empty())
+    return ;
+  auto pDeletingLayer = m_vLayers[sId];
+
+
+  for(const auto active : m_ActiveSet){
+    m_vLayers[active]->removeForward(pDeletingLayer);
+    graph.deleteEdge(active, sId);
+  }
+
+  checkSizes();
+  m_pWorkSpace->update();
+  emit compliteCalculation();
+}
+
 
 void ConstructorWidget::onSetInputSize(const std::vector<std::size_t>& vInputSize)
 {
   m_vInputSize = vInputSize;
 }
 
-void ConstructorWidget::onSetOutputPath(const QString& qstrPath)
-{
-  m_strPath = qstrPath.toStdString();
-}
-
 void ConstructorWidget::onAddLayer(const QPoint& crPoint, const std::shared_ptr<NNLayerParams>& spParams)
 {
-  auto pLayer = new NNLayerWidget{get_increment(), spParams};
-
-  pLayer->setParent(this);
-  pLayer->move(crPoint);
-  pLayer->show();
-  this->stackUnder(pLayer);
+  emit startCalculation();
+  auto id = get_increment();
+  auto pLayer = new NNLayerWidget{id, spParams};
+  m_pWorkSpace->add(crPoint, pLayer);
 
   auto bRes = true;
 
   bRes &= static_cast<bool>(connect(pLayer, SIGNAL(becomeActive(std::size_t)), SLOT(onChangeActive(std::size_t))));
   bRes &= static_cast<bool>(connect(pLayer, SIGNAL(makeForward(std::size_t)), SLOT(onMakeForward(std::size_t))));
+  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(addToActive(std::size_t)), SLOT(onAddToActive(std::size_t))));
+  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(delFromActive(std::size_t)), SLOT(onDelFromActive(std::size_t))));
 
   assert(bRes);
 
-  if (!m_vLayers.empty()){
-    auto pActiveLayer = get_layer(m_sActive, m_vLayers);
-    pActiveLayer->addForward(pLayer);
-  }
-
-  m_vLayers.push_back(pLayer);
-
-  onChangeActive(m_vLayers.back()->getId());
+  graph.addVertex(id);
+  m_vLayers[id] = pLayer;
+  onChangeActive(id);
 
   checkSizes();
 
-  update();
+  m_pWorkSpace->update();
+  emit compliteCalculation();
 }
 
 void ConstructorWidget::onProcActions(QAction* pAction)
 {
   if ("Make linear" == pAction->text())
     onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeLinear());
+  else if ("Make bilinear" == pAction->text())
+    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeBilinear());
   else if ("Make conv1d" == pAction->text())
     onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConv1d());
   else if ("Make conv2d" == pAction->text())
@@ -404,8 +228,6 @@ void ConstructorWidget::onProcActions(QAction* pAction)
     onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeNormalization());
   else if ("Make activation" == pAction->text())
     onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeActivation());
-  else if ("Make concatinate" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConcatinate());
   else if ("Make dropout" == pAction->text())
     onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeDropout());
   else if ("Make flatten" == pAction->text())
@@ -420,32 +242,98 @@ void ConstructorWidget::onProcActions(QAction* pAction)
 
 void ConstructorWidget::onChangeActive(std::size_t sId)
 {
-  if (m_sActive == sId)
-    return ;
+  if(m_ActiveSet.find(sId) != m_ActiveSet.cend())
+    return;
+  while(!m_ActiveSet.empty()){
+    auto id = *m_ActiveSet.cbegin();
+    m_ActiveSet.erase(id);
+//    onDelFromActive(id);
+    if(sId != id)
+      makeActive(id, false);
+  }
+//  emit changeActiveLayer(nullptr);
+//  emit paramsChanged(nullptr);
 
-  if (m_vLayers.size() > 1)
-    makeActive(m_sActive, false);
+  if(sId == SIZE_MAX)
+    return;
 
-  m_sActive = sId;
-
-  makeActive(m_sActive, true);
+//  onAddToActive(sId);
+  m_ActiveSet.insert(sId);
+  makeActive(sId, true);
 }
 
 void ConstructorWidget::onMakeForward(std::size_t sId)
 {
-  auto pActive = get_layer(m_sActive, m_vLayers);
-  auto pForward = get_layer(sId, m_vLayers);
+  emit startCalculation();
 
-  if (!pActive || !pForward)
-    return;
+  for(const auto active : m_ActiveSet){
+    auto pActive = m_vLayers[active];
+    auto pForward = m_vLayers[sId];
 
-  pActive->addForward(pForward);
-  update();
+    if (!pActive || !pForward)
+      return;
+    graph.addEdge(active, sId);
+    pActive->addForward(pForward);
+  }
+  if(m_ActiveSet.size() == 1){
+    auto pActive = m_vLayers[*m_ActiveSet.cbegin()];
+    emit changeActiveLayer(pActive);
+  }
+
+  checkSizes();
+  m_pWorkSpace->update();
+  emit compliteCalculation();
+}
+
+void ConstructorWidget::onAddToActive(std::size_t sId)
+{
+  m_ActiveSet.insert(sId);
+  if(m_ActiveSet.size() == 1){
+    auto pLayerWidget = m_vLayers[sId];
+    emit changeActiveLayer(pLayerWidget);
+    emit paramsChanged(pLayerWidget->getParams());
+  }else{
+    emit changeActiveLayer(nullptr);
+    emit paramsChanged(nullptr);
+  }
+}
+
+void ConstructorWidget::onDelFromActive(std::size_t sId)
+{
+  m_ActiveSet.erase(sId);
+  if(m_ActiveSet.size() != 1){
+    emit changeActiveLayer(nullptr);
+    emit paramsChanged(nullptr);
+  }else{
+    auto pLayerWidget = m_vLayers[*m_ActiveSet.cbegin()];
+    emit changeActiveLayer(pLayerWidget);
+    emit paramsChanged(pLayerWidget->getParams());
+  }
+}
+
+void ConstructorWidget::onActiveAll()
+{
+  for(const auto [id, pLayer]: m_vLayers){
+    pLayer->toActive();
+  }
 }
 
 void ConstructorWidget::initGUI()
 {
+  auto pLayout = new QGridLayout{this};
+  m_pWorkSpace = new ConstructorWorkSpace{m_vLayers, m_pMenu};
+  m_pWorkSpace->setAutoFillBackground(false);
+  auto temp = new QScrollArea;
+//  temp->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+//  temp->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+
+  temp->setWidget(m_pWorkSpace);
+  m_pWorkSpace->show();
+  pLayout->addWidget(temp);
+  pLayout->setMargin(0);
+
   m_pMenu->addAction(new QAction{"Make linear"});
+  m_pMenu->addAction(new QAction{"Make bilinear"});
   m_pMenu->addAction(new QAction{"Make conv1d"});
   m_pMenu->addAction(new QAction{"Make conv2d"});
   m_pMenu->addAction(new QAction{"Make pool"});
@@ -454,7 +342,6 @@ void ConstructorWidget::initGUI()
   m_pMenu->addAction(new QAction{"Make reshape"});
   m_pMenu->addAction(new QAction{"Make normalization"});
   m_pMenu->addAction(new QAction{"Make activation"});
-  m_pMenu->addAction(new QAction{"Make concatinate"});
   m_pMenu->addAction(new QAction{"Make dropout"});
   m_pMenu->addAction(new QAction{"Make flatten"});
   m_pMenu->addAction(new QAction{"Make recurrent"});
@@ -467,222 +354,119 @@ void ConstructorWidget::createConnections()
 {
   auto bRes = true;
 
-  bRes = static_cast<bool>(connect(m_pMenu, SIGNAL(triggered(QAction*)), SLOT(onProcActions(QAction*))));
+  bRes &= static_cast<bool>(connect(m_pMenu, SIGNAL(triggered(QAction*)), SLOT(onProcActions(QAction*))));
+  bRes &= static_cast<bool>(connect(&graph, SIGNAL(notValid(std::string)), SIGNAL(notValid(std::string))));
+  bRes &= static_cast<bool>(connect(new QShortcut{QKeySequence{Qt::CTRL + Qt::Key_A}, this}, &QShortcut::activated, [&](){onActiveAll();}));
 
   assert(bRes);
 }
 
 void ConstructorWidget::makeActive(std::size_t sId, bool bActive)
 {
-  auto pLayerWidget = get_layer(sId, m_vLayers);
+  if(sId == SIZE_MAX){
+    emit changeActiveLayer(nullptr);
+    emit paramsChanged(nullptr);
+    return;
+  }
+
+  auto pLayerWidget = m_vLayers[sId];
 
   pLayerWidget->makeActive(bActive);
 
-  if (bActive)
+  if (bActive){
+    emit changeActiveLayer(pLayerWidget);
     emit paramsChanged(pLayerWidget->getParams());
+  }
 }
 
-void ConstructorWidget::mousePressEvent(QMouseEvent* pEvent)
-{
-  if (pEvent->button() == Qt::RightButton)
-  {
-    auto Pos = mapToGlobal(pEvent->pos());
 
-    m_pMenu->popup(Pos);
-  }
-  QWidget::mousePressEvent(pEvent);
+void ConstructorWidget::checkSizes()
+{
+  for (auto [id, pLayer] : m_vLayers)
+    pLayer->resetInputSize();
+
+  graph.checkSizes(m_vInputSize);
+}
+
+void ConstructorWidget::resizeEvent(QResizeEvent*)
+{
+  m_pWorkSpace->setMinimumSize(m_pWorkSpace->parentWidget()->size());
+  m_pWorkSpace->resize(m_pWorkSpace->getQSize());
+}
+
+void ConstructorWidget::showEvent(QShowEvent*)
+{
+  resizeEvent(nullptr);
+}
+
+void ConstructorWidget::mouseReleaseEvent(QMouseEvent* /*pEvent*/)
+{
+  onChangeActive(SIZE_MAX);
 }
 
 void ConstructorWidget::mouseMoveEvent(QMouseEvent* pEvent)
 {
-  for (auto pLayer : m_vLayers)
-  {
-    if (pLayer->isGrabbed())
-      pLayer->move(pEvent->pos() - pLayer->getGrabbedPos());
+  NNLayerWidget* pLayer;
+  if(auto temp = std::find_if(m_vLayers.begin(), m_vLayers.end(),
+                              [](const auto pLayer){return pLayer.second->isGrabbed();});
+     temp != m_vLayers.end())
+    pLayer = temp->second;
+  else
+    return;
+
+  const int k_margin = 5;
+
+  QPoint layersPos{m_pWorkSpace->size().width(), m_pWorkSpace->size().height()};
+  QSize layersPosEnd{};
+
+  for(const auto i : m_ActiveSet){
+    auto pCurrent = m_vLayers[i];
+
+    layersPos.rx() = std::min(layersPos.x(), pCurrent->pos().x());
+    layersPos.ry() = std::min(layersPos.y(), pCurrent->pos().y());
+    layersPosEnd.rwidth() = std::max(layersPosEnd.width(), pCurrent->pos().x() + pCurrent->size().width());
+    layersPosEnd.rheight() = std::max(layersPosEnd.height(), pCurrent->pos().y() + pCurrent->size().height());
   }
-  update();
+  QSize layersSize{layersPosEnd};
+  layersSize.rwidth() -= layersPos.x();
+  layersSize.rheight() -= layersPos.y();
+  auto temp = layersPos - pLayer->pos();
+  auto eventWithCorPos = pEvent->pos() - pLayer->getGrabbedPos() + temp ;
+  const auto grabedLayerPos = pLayer->pos();
+  QPoint shift{eventWithCorPos};
+
+  if(eventWithCorPos.x() - k_margin < 0)
+    shift.rx() = k_margin;
+  if(eventWithCorPos.y() - k_margin < 0)
+    shift.ry() = k_margin;
+  if(shift.x() != eventWithCorPos.x() || shift.y() != eventWithCorPos.y())
+    layersPos = shift;
+
+  for(const auto i : m_ActiveSet){
+    auto pCurrent = m_vLayers[i];
+    auto pos = pCurrent->pos();
+    std::cout << i<<"  "<<(pos - layersPos + shift).x()<<"  "<<(pos - layersPos + shift).y() <<std::endl;
+    pCurrent->move(pos - layersPos + shift);
+  }
+
+
+  QPoint resize{0, 0};
+  auto mainSize = m_pWorkSpace->size();
+  if(auto tmp = (layersPos.x() + layersSize.width()) - mainSize.width() + k_margin; tmp > 0)
+    resize.rx() = tmp;
+  if(auto tmp = (layersPos.y() + layersSize.height()) - mainSize.height() + k_margin; tmp > 0)
+    resize.ry() = tmp;
+  if(resize.x() != 0 || resize.y() != 0){
+    QPoint point = resize + QPoint{this->size().width(), this->size().height()};
+    m_pWorkSpace->setWidth(point.x());
+    m_pWorkSpace->setHeight(point.y());
+    m_pWorkSpace->resize(point.x(), point.y());
+  }
+
+
+  m_pWorkSpace->update();
 }
 
-void ConstructorWidget::paintEvent(QPaintEvent* pEvent)
-{
-  QWidget::paintEvent(pEvent);
-
-  QPainter Painter(this);
-
-  Painter.setPen(QColor{0,0,0});
-
-  for (auto pLayer : m_vLayers)
-  {
-    for(auto pForward : pLayer->getForward())
-    {
-      auto From = pLayer->pos() + QPoint{pLayer->rect().center().x(), pLayer->rect().bottom()};
-      auto To = pForward->pos() + QPoint{pForward->rect().center().x(), 0};
-
-      Painter.drawLine(From, To);
-      Painter.drawEllipse(To, 5, 5);
-    }
-  }
-}
-
-void ConstructorWidget::checkSizes()
-{
-  auto pStart = findStart();
-
-  for (auto pLayer : m_vLayers)
-    pLayer->resetInputSize();
-
-  pStart->addInputSize(m_vInputSize);
-
-  bfs(pStart, {}, [](NNLayerWidget* pCurrent, NNLayerWidget* pNext){
-    if (pNext)
-      pNext->addInputSize(pCurrent->calcOutputSize());
-  });
-}
-
-NNLayerWidget* ConstructorWidget::findStart() const
-{
-#if 0 // start solution without cheking how many roots    always O(N^2) speed O(1) memory
-  for (const auto pChecking : m_vLayers){
-    bool bStart = std::all_of(m_vLayers.begin(), m_vLayers.end(), [pChecking](NNLayerWidget* pLayer){
-                  const auto& vForwards = pLayer->getForward();
-                  auto it = std::find(vForwards.begin(), vForwards.end(), pChecking);
-                  return it == vForwards.end();
-  });
-    if (bStart)
-      return pChecking;
-  }
-  throw std::runtime_error("circular dependensis");
-#elif 1 // start solution with cheking how many roots    always O(N^2) speed O(1) memory
-  if(m_vLayers.size() == 1){
-    return m_vLayers.front();
-  }
-  int count = 0;
-  auto pResult = *(m_vLayers.begin());
-  for(const auto pChecking : m_vLayers){
-    bool bStart = std::all_of(m_vLayers.begin(), m_vLayers.end(), [pChecking](NNLayerWidget* pLayer){
-                  const auto& vForwards = pLayer->getForward();
-                  auto it = std::find(vForwards.begin(), vForwards.end(), pChecking);
-                  return it == vForwards.end();
-  });
-    if (bStart){
-      ++count;
-      pResult = pChecking;
-    }
-
-  }
-  switch(count){
-    case 1:
-      return pResult;
-    case 0:
-      throw std::runtime_error("circular dependensis");
-      return{};
-    default:
-      throw std::runtime_error("Too many roots");
-      return{};
-  }
-#elif 1 // solution with cheking how many roots. Roots stored in container(list or vector)    in worst O(N^2) speed O(N) memory   avarage O(N^2) speed O(N) memory
-  if(m_vLayers.size() == 1){
-    return m_vLayers.front();
-  }
-  std::list<NNLayerWidget*> ans;
-  for (const auto pChecking : m_vLayers){
-    bool bStart = std::all_of(m_vLayers.begin(), m_vLayers.end(), [pChecking](NNLayerWidget* pLayer){
-                  const auto& vForwards = pLayer->getForward();
-                  auto it = std::find(vForwards.begin(), vForwards.end(), pChecking);
-                  return it == vForwards.end();
-  });
-    if (bStart)
-      ans.push_back(pChecking);
-  }
-  switch(ans.size()){
-    case 1:
-      return ans.front();
-    case 0:
-      throw std::runtime_error("circular dependensis");
-      return{};
-    default:
-      throw std::runtime_error("Too many roots");
-      return{};
-  }
-#elif 1 // solution with cheking how many roots. Not roots stored in unordered_set    in worst O(N^2) speed O(N) memory   avarage O(N^1,5) speed O(N) memory
-  if(m_vLayers.size() == 1){
-    return m_vLayers.front();
-  }
-  std::unordered_set<NNLayerWidget*> hasParent;
-  hasParent.reserve(m_vLayers.size());
-  std::for_each(m_vLayers.cbegin(), m_vLayers.cend(), [&hasParent](const auto pLayer){
-    const auto& vForwards = pLayer->getForward();
-    std::for_each(vForwards.cbegin(), vForwards.cend(), [&hasParent](const auto i){
-      hasParent.insert(i);
-    });
-  });
-  switch(m_vLayers.size() - hasParent.size()){
-    case 1:
-      return *std::find_if_not(m_vLayers.cbegin(), m_vLayers.cend(),
-                               [&hasParent](const auto pLayer){return hasParent.find(pLayer) != hasParent.cend();});
-    case 0:
-      throw std::runtime_error("circular dependensis");
-      return{};
-    default:
-      throw std::runtime_error("Too many roots");
-      return{};
-  }
-#elif 1 // solution with cheking how many roots. Not roots stored in unordered_map    O(N^2) speed O(N) memory
-  if(m_vLayers.size() == 1){
-    return m_vLayers.front();
-  }
-  std::unordered_map<NNLayerWidget*, int> hasParent;
-  hasParent.reserve(m_vLayers.size());
-  std::for_each(m_vLayers.cbegin(), m_vLayers.cend(), [&hasParent](const auto pLayer){
-    const auto& vForwards = pLayer->getForward();
-    std::for_each(vForwards.cbegin(), vForwards.cend(), [&hasParent](const auto i){
-      ++hasParent[i];
-    });
-  });
-  switch(m_vLayers.size() - hasParent.size()){
-    case 1:
-      return *std::find_if_not(m_vLayers.cbegin(), m_vLayers.cend(),
-                               [&hasParent](const auto pLayer){return hasParent.find(pLayer) != hasParent.cend();});
-    case 0:
-      throw std::runtime_error("circular dependensis");
-      return{};
-    default:
-      throw std::runtime_error("Too many roots");
-      return{};
-  }
-#else // solution with cheking how many roots. Not roots stored in unordered_map    O(N^2) speed O(N) memory
-  if(m_vLayers.size() == 1){
-    return m_vLayers.front();
-  }
-  std::unordered_map<NNLayerWidget*, int> hasParent;
-  hasParent.reserve(m_vLayers.size());
-  std::for_each(m_vLayers.cbegin(), m_vLayers.cend(), [&hasParent](const auto pLayer){
-    hasParent[pLayer] = 0;
-  });
-
-  std::for_each(m_vLayers.cbegin(), m_vLayers.cend(), [&hasParent](const auto pLayer){
-    const auto& vForwards = pLayer->getForward();
-    std::for_each(vForwards.cbegin(), vForwards.cend(), [&hasParent](const auto i){
-      ++hasParent[i];
-    });
-  });
-  auto sizeParent = std::count_if(hasParent.begin(), hasParent.end(), [&hasParent](const auto& it){return it.second == 0;});
-  switch(sizeParent){
-    case 1:
-      return *std::find_if_not(m_vLayers.cbegin(), m_vLayers.cend(),
-                               [&hasParent](const auto pLayer){return hasParent[pLayer] != 0;});
-    case 0:
-      throw std::runtime_error("circular dependensis");
-      return{};
-    default:
-      throw std::runtime_error("Too many roots");
-      //std::vector<> ans;
-      //for_each(hasParent.begin(), hasParent.end(), [&hasParent, &ans](const auto& it){if(it.second == 0) ans.push_back(it.first);});
-      return{};
-  }
-#endif
-
-}
 
 void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc) const
 {

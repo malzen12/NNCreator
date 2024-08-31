@@ -15,11 +15,12 @@ public:
 
   void setParams(const std::shared_ptr<NNLayerParams>& spParams) noexcept;
   const std::shared_ptr<NNLayerParams>& getParams() const noexcept;
-  const std::vector<std::size_t> &getInputSize() const;
+  const std::vector<std::vector<std::size_t>>& getInputSize() const;
 
   void deleteLayer();
 
   bool isGrabbed() const;
+  bool isActive() const;
 
   void mousePressEvent(QMouseEvent* pEvent) final;
   void mouseReleaseEvent(QMouseEvent* pEvent) final;
@@ -38,13 +39,18 @@ public:
 
 
 
+
+  void toActive();
 signals:
   void becomeActive(std::size_t);
   void makeForward(std::size_t);
+  void addToActive(std::size_t);
+  void delFromActive(std::size_t);
 
 private:
   void initGUI();
   void updateStyle();
+
 
   std::size_t m_sId;
   bool m_bGrabbed;
@@ -54,7 +60,7 @@ private:
 
   std::shared_ptr<NNLayerParams> m_spParams;
 
-  std::vector<std::size_t> m_vInputSize;
+  std::vector<std::vector<std::size_t>> m_vInputSizes;
   bool m_bValidParams;
 
   std::vector<NNLayerWidget*> m_vForwards;

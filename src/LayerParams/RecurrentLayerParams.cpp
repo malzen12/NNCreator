@@ -11,15 +11,17 @@ QString RecurrentLayerParams::getDisplayName() const noexcept
   return m_vParams[0].getValue().toString();
 }
 
-bool RecurrentLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
+bool RecurrentLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
   auto sInputSize = m_vParams[1].getValue().toUInt();
 
+  auto& vInputSize = vInputSizes.front();
   return vInputSize.back() == sInputSize;
 }
 
-std::vector<std::size_t> RecurrentLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
+std::vector<std::size_t> RecurrentLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   assert(vInputSize.size() >= 1);
 
   auto sHiddenSize = m_vParams[2].getValue().toUInt();
