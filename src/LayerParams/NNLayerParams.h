@@ -29,6 +29,8 @@ public:
   static std::shared_ptr<NNLayerParams> makeFlatten();
   static std::shared_ptr<NNLayerParams> makeRecurrent();
   static std::shared_ptr<NNLayerParams> makeMyRecurrent();
+  std::shared_ptr<NNLayerParams> createLayer(); ////@todo
+
 
   static std::string printLinear();
   static std::string printConv1d();

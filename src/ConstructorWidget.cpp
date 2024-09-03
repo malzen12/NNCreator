@@ -135,7 +135,8 @@ void ConstructorWidget::onDeleteActive()
   if (m_vLayers.empty())
     return ;
 
-  for(const auto active : m_ActiveSet){
+  while(!m_ActiveSet.empty()){
+    const auto active = *m_ActiveSet.cbegin();
     auto pDeletingLayer = m_vLayers[active];
 
     for (auto [_, pLayer] : m_vLayers)
@@ -324,9 +325,6 @@ void ConstructorWidget::initGUI()
   m_pWorkSpace = new ConstructorWorkSpace{m_vLayers, m_pMenu};
   m_pWorkSpace->setAutoFillBackground(false);
   auto temp = new QScrollArea;
-//  temp->setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-//  temp->setHorizontalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
-
   temp->setWidget(m_pWorkSpace);
   m_pWorkSpace->show();
   pLayout->addWidget(temp);
@@ -432,7 +430,6 @@ void ConstructorWidget::mouseMoveEvent(QMouseEvent* pEvent)
   layersSize.rheight() -= layersPos.y();
   auto temp = layersPos - pLayer->pos();
   auto eventWithCorPos = pEvent->pos() - pLayer->getGrabbedPos() + temp ;
-  const auto grabedLayerPos = pLayer->pos();
   QPoint shift{eventWithCorPos};
 
   if(eventWithCorPos.x() - k_margin < 0)
@@ -445,7 +442,6 @@ void ConstructorWidget::mouseMoveEvent(QMouseEvent* pEvent)
   for(const auto i : m_ActiveSet){
     auto pCurrent = m_vLayers[i];
     auto pos = pCurrent->pos();
-    std::cout << i<<"  "<<(pos - layersPos + shift).x()<<"  "<<(pos - layersPos + shift).y() <<std::endl;
     pCurrent->move(pos - layersPos + shift);
   }
 

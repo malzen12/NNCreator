@@ -11,7 +11,8 @@
 MainWidget::MainWidget()
   : m_pGlobalSettingsWidget{new GlobalSettingsWidget},
     m_pConstructorWidget{new ConstructorWidget},
-    m_pParamsEditorWidget{new ParamsEditorWidget}
+    m_pParamsEditorWidget{new ParamsEditorWidget},
+    m_pCreateLayerWidget{new CreateLayerWidget}
 {
   initGUI();
   createConnections();
@@ -75,9 +76,21 @@ void MainWidget::onCheckIsValid() const
 void MainWidget::initGUI()
 {
   auto pLayoutV = new QVBoxLayout{this};
-  auto pLayoutH = new QHBoxLayout{pLayoutV->widget()};
+  auto pLayoutH = new QHBoxLayout;
+  auto pLayoutLeftV = new QVBoxLayout;
 
-  pLayoutH->addWidget(m_pGlobalSettingsWidget, 10);
+
+
+//  scroll->setWidget(m_pParamsEditorWidget);
+//  pLayoutRightV->addWidget(scroll, 70);
+  pLayoutLeftV->addWidget(m_pGlobalSettingsWidget);
+//  scroll = new QScrollArea;
+//  auto scroll = new QScrollArea;
+//  scroll->setWidget(m_pCreateLayerWidget);
+//  pLayoutRightV->addWidget(scroll);
+  pLayoutLeftV->addWidget(m_pCreateLayerWidget);
+
+  pLayoutH->addLayout(pLayoutLeftV, 10);
   pLayoutH->addWidget(m_pConstructorWidget, 80);
   pLayoutH->addWidget(m_pParamsEditorWidget, 10);
 

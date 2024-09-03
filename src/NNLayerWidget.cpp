@@ -107,7 +107,6 @@ void NNLayerWidget::mousePressEvent(QMouseEvent* pEvent)
       m_GrabbedPos = pEvent->pos();
       m_bActive = !m_bActive;
       updateStyle();
-      std::cout << "ctrl+left_click" <<std::endl;
       if(m_bActive)
         emit addToActive(m_sId);
       else

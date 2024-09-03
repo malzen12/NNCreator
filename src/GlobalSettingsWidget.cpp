@@ -73,7 +73,7 @@ void GlobalSettingsWidget::initGUI()
   auto pMainLayout = new QVBoxLayout{this};
   pMainLayout->addLayout(m_pTrainSettingsLayout);
   pMainLayout->addLayout(m_pNetSettingsLayout);
-  pMainLayout->addSpacerItem(new QSpacerItem{10, 10, QSizePolicy::Minimum, QSizePolicy::Expanding});
+//  pMainLayout->addSpacerItem(new QSpacerItem{10, 10, QSizePolicy::Minimum, QSizePolicy::Expanding});
 
 }
 

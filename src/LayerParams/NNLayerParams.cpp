@@ -218,6 +218,11 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeMyRecurrent()
   return std::make_shared<LinearLayerParams>(strName, vParams);
 }
 
+std::shared_ptr<NNLayerParams> NNLayerParams::createLayer()
+{
+//  m_fabricLayer->create();
+}
+
 void NNLayerParams::setName(const std::string& strName) noexcept
 {
   m_strName = strName;

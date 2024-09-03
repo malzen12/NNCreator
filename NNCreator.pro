@@ -42,7 +42,9 @@ SOURCES += \
     $$PWD/src/LayerParams/BilinearLayerParams.cpp \
     $$PWD/src/Branch.cpp \
     $$PWD/src/ConstructorWidgetHelper.cpp \
-    $$PWD/src/ConstructorWorkSpace.cpp
+    $$PWD/src/ConstructorWorkSpace.cpp \
+    src/CreateLayerWidget.cpp \
+    src/GlobalWarningWidget.cpp
 
 
 HEADERS += \
@@ -77,5 +79,7 @@ HEADERS += \
     $$PWD/src/LayerParams/BilinearLayerParams.h \
     $$PWD/src/Branch.h \
     $$PWD/src/ConstructorWidgetHelper.h \
-    $$PWD/src/ConstructorWorkSpace.h
+    $$PWD/src/ConstructorWorkSpace.h \
+    src/CreateLayerWidget.h \
+    src/GlobalWarningWidget.h
 
