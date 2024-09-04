@@ -28,6 +28,12 @@ QString make_size_string(const std::vector<std::size_t>& vSize = {})
   return qstrRes;
 }
 
+//std::shared_ptr<NNLayerParams> NNLayerWidget::createLayer()
+//{
+////  m_fabricLayer->create();
+//  return std::make_shared<LinearLayerParams>();
+//}
+
 NNLayerWidget::NNLayerWidget(std::size_t sId, const std::shared_ptr<NNLayerParams>& spParams)
   : m_sId{sId},
     m_bGrabbed{false},

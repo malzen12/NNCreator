@@ -13,6 +13,9 @@ class CreateLayerWidget : public QTreeWidget
   Q_OBJECT
 public:
   CreateLayerWidget();
+
+signals:
+  void treeWidgetItem(const std::vector<QString>&);
 private slots:
   void createItem(QTreeWidgetItem* item, int column);;
 private:
@@ -20,7 +23,7 @@ private:
   void initGui();
   void createConnections();
 private:
-  int listIndex{-1};
+
 };
 
 

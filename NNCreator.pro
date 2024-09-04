@@ -44,7 +44,8 @@ SOURCES += \
     $$PWD/src/ConstructorWidgetHelper.cpp \
     $$PWD/src/ConstructorWorkSpace.cpp \
     src/CreateLayerWidget.cpp \
-    src/GlobalWarningWidget.cpp
+    src/GlobalWarningWidget.cpp \
+    src/LayerParams/Conv3dLayerParams.cpp
 
 
 HEADERS += \
@@ -81,5 +82,6 @@ HEADERS += \
     $$PWD/src/ConstructorWidgetHelper.h \
     $$PWD/src/ConstructorWorkSpace.h \
     src/CreateLayerWidget.h \
-    src/GlobalWarningWidget.h
+    src/GlobalWarningWidget.h \
+    src/LayerParams/Conv3dLayerParams.h
 

@@ -34,6 +34,7 @@ signals:
   void startCalculation();
   void compliteCalculation();
   void changeActiveLayer(NNLayerWidget*);
+  void treeWidgetItem(const std::vector<QString>&);
 
 public slots:
   void onSetParams(const std::shared_ptr<NNLayerParams>& spParams);
@@ -45,12 +46,15 @@ public slots:
 
 private slots:
   void onAddLayer(const QPoint& crPoint, const std::shared_ptr<NNLayerParams>& spParams);
+  void onAddLayer(const QPoint& crPoint, NNLayerWidget* pLayer);
   void onProcActions(QAction* /*pAction*/);
   void onChangeActive(std::size_t sId);
   void onMakeForward(std::size_t sId);
   void onAddToActive(std::size_t sId);
   void onDelFromActive(std::size_t sId);
   void onActiveAll();
+
+  void onCreateWidget(NNLayerWidget* pLayer);
 
 private:
   void initGUI();
@@ -62,7 +66,7 @@ private:
   void resizeEvent(QResizeEvent*) final;
   void showEvent(QShowEvent*) final;
   void mouseReleaseEvent(QMouseEvent*) final;
-  void mouseMoveEvent(QMouseEvent* pEvent) final;
+//  void mouseMoveEvent(QMouseEvent* pEvent) final;
 
   void bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc) const;
 
@@ -78,6 +82,6 @@ private:
 
   std::vector<std::size_t> m_vInputSize;
 
-
+  FabricLayer* m_pFabricLayer;
 };
 

@@ -6,8 +6,9 @@
 
 
 #include <iostream>
-ConstructorWorkSpace::ConstructorWorkSpace(const std::unordered_map<std::size_t, NNLayerWidget*>& vLayers, QMenu* pMenu)
+ConstructorWorkSpace::ConstructorWorkSpace(const std::unordered_map<std::size_t, NNLayerWidget*>& vLayers, const std::unordered_set<std::size_t>& ActiveSet, QMenu* pMenu)
   : m_refvLayers(vLayers),
+    m_refActiveSet(ActiveSet),
     m_pMenu(pMenu)
 {
   initGUI();
@@ -49,48 +50,65 @@ void ConstructorWorkSpace::mousePressEvent(QMouseEvent* pEvent)
   QWidget::mousePressEvent(pEvent);
 }
 
-//void ConstructorWorkSpace::mouseMoveEvent(QMouseEvent* pEvent)
-//{
-//  NNLayerWidget* pLayer;
-//  if(auto temp = std::find_if(m_refvLayers.begin(), m_refvLayers.end(),
-//                              [](const auto pLayer){return pLayer.second->isGrabbed();});
-//     temp != m_refvLayers.end())
-//    pLayer = temp->second;
-//  else
-//    return;
+void ConstructorWorkSpace::mouseMoveEvent(QMouseEvent* pEvent)
+{
+  NNLayerWidget *pLayer;
+  if (auto temp = std::find_if(
+          m_refvLayers.begin(), m_refvLayers.end(),
+          [](const auto pLayer) { return pLayer.second->isGrabbed(); });
+      temp != m_refvLayers.end())
+    pLayer = temp->second;
+  else
+    return;
+
+  const int k_margin = 5;
+
+  QPoint layersPos{this->size().width(), this->size().height()};
+  QSize layersPosEnd{};
+
+  for(const auto i : m_refActiveSet){
+    auto pCurrent = m_refvLayers.at(i);
+    layersPos.rx() = std::min(layersPos.x(), pCurrent->pos().x());
+    layersPos.ry() = std::min(layersPos.y(), pCurrent->pos().y());
+    layersPosEnd.rwidth() = std::max(layersPosEnd.width(), pCurrent->pos().x() + pCurrent->size().width());
+    layersPosEnd.rheight() = std::max(layersPosEnd.height(), pCurrent->pos().y() + pCurrent->size().height());
+  }
+  QSize layersSize{layersPosEnd};
+  layersSize.rwidth() -= layersPos.x();
+  layersSize.rheight() -= layersPos.y();
+  auto temp = layersPos - pLayer->pos();
+  auto eventWithCorPos = pEvent->pos() - pLayer->getGrabbedPos() + temp ;
+  QPoint shift{eventWithCorPos};
+
+  if(eventWithCorPos.x() - k_margin < 0)
+    shift.rx() = k_margin;
+  if(eventWithCorPos.y() - k_margin < 0)
+    shift.ry() = k_margin;
+  if(shift.x() != eventWithCorPos.x() || shift.y() != eventWithCorPos.y())
+    layersPos = shift;
+
+  for(const auto i : m_refActiveSet){
+    auto pCurrent = m_refvLayers.at(i);
+    auto pos = pCurrent->pos();
+    pCurrent->move(pos - layersPos + shift);
+  }
+
+  QPoint resize{0, 0};
+  auto mainSize = this->size();
+  if(auto tmp = (layersPos.x() + layersSize.width()) - mainSize.width() + k_margin; tmp > 0)
+    resize.rx() = tmp;
+  if(auto tmp = (layersPos.y() + layersSize.height()) - mainSize.height() + k_margin; tmp > 0)
+    resize.ry() = tmp;
+  if(resize.x() != 0 || resize.y() != 0){
+    QPoint point = resize + QPoint{this->size().width(), this->size().height()};
+    width = point.x();
+    height = point.y();
+    this->resize(point.x(), point.y());
+  }
 
 
-//  auto eventWithCorPos = pEvent->pos() - pLayer->getGrabbedPos();
-
-//  const int k_margin = 5;
-//  auto layerPos = pLayer->pos();
-//  auto layerSize = pLayer->size();
-//  QPoint shift{eventWithCorPos};
-
-//  if(eventWithCorPos.x() - k_margin < 0)
-//    shift.rx() = k_margin;
-//  if(eventWithCorPos.y() - k_margin < 0)
-//    shift.ry() = k_margin;
-//  if(shift.x() != eventWithCorPos.x() || shift.y() != eventWithCorPos.y())
-//    layerPos = shift;
-
-//  pLayer->move(shift);
-//  QPoint resize{0, 0};
-//  auto mainSize = this->size();
-//  if(auto tmp = (layerPos.x() + layerSize.width()) - mainSize.width() + k_margin; tmp > 0)
-//    resize.rx() = tmp;
-//  if(auto tmp = (layerPos.y() + layerSize.height()) - mainSize.height() + k_margin; tmp > 0)
-//    resize.ry() = tmp;
-//  if(resize.x() != 0 || resize.y() != 0){
-//    QPoint point = resize + QPoint{this->size().width(), this->size().height()};
-//    width = point.x();
-//    height = point.y();
-//    this->resize(point.x(), point.y());
-//  }
-
-
-//  update();
-//}
+  update();
+}
 
 void ConstructorWorkSpace::resizeEvent(QResizeEvent*)
 {

@@ -5,6 +5,7 @@
 class Conv1dLayerParams : public NNLayerParams
 {
 public:
+  Conv1dLayerParams();
   Conv1dLayerParams(const std::string& strName, const std::vector<NNParam>& vParams);
 
   bool checkInputSize(const InputSizeType& vInputSizes) const final;

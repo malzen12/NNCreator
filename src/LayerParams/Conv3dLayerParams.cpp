@@ -1,32 +1,26 @@
-#include "Conv2dLayerParams.h"
+#include "Conv3dLayerParams.h"
 #include "InitializerFunc.h"
 #include "PaddingMode.h"
 #include <iostream>
 
-///< @todo to aux
 inline std::size_t calc_output_axis(std::size_t sInput, std::size_t sKernel, std::size_t sStride, std::size_t sPadding, std::size_t sDilitation)
 {
   return static_cast<double>(sInput + 2 * sPadding - sDilitation * (sKernel - 1) - 1) / sStride + 1;
 }
 
-Conv2dLayerParams::Conv2dLayerParams(const std::string& strName, const std::vector<NNParam>& vParams)
-  : NNLayerParams(strName, vParams)
+Conv3dLayerParams::Conv3dLayerParams()
 {
-  assert(m_vParams.size() >= 6);
-}
-
-Conv2dLayerParams::Conv2dLayerParams()
-{
-  m_strName = "Conv2d";
+  m_strName = "Conv3d";
   m_vParams = {
-      NNParam{"Input I[N,?,1,0]", "in_channels", 0},
-      NNParam{"Output O[N,?,1,0]", "out_channels", 0},
+      NNParam{"Input I[N,?,2,1,0]", "in_channels", 0},
+      NNParam{"Output O[N,?,2,1,0]", "out_channels", 0},
       NNParam{"Kernel Size", "kernel_size", QList<QVariant>{1, 1},
               QVariant::Type::List},
-      NNParam{"Stride", "stride", QList<QVariant>{1, 1}, QVariant::Type::List},
-      NNParam{"Padding", "padding", QList<QVariant>{0, 0},
+      NNParam{"Stride", "stride", QList<QVariant>{1, 1, 1},
               QVariant::Type::List},
-      NNParam{"Dilation", "dilation", QList<QVariant>{1, 1},
+      NNParam{"Padding", "padding", QList<QVariant>{0, 0, 0},
+              QVariant::Type::List},
+      NNParam{"Dilation", "dilation", QList<QVariant>{1, 1, 1},
               QVariant::Type::List},
       NNParam{"Groups", "groups", 1},
       NNParam{"Bias", "bias", true, QVariant::Type::Bool},
@@ -39,7 +33,7 @@ Conv2dLayerParams::Conv2dLayerParams()
 }
 
 
-bool Conv2dLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
+bool Conv3dLayerParams::checkInputSize(const InputSizeType& vInputSizes) const ///@todo
 {
   auto sInput = m_vParams[0].getValue().toUInt();
   auto sOutput = m_vParams[1].getValue().toUInt();
@@ -49,38 +43,38 @@ bool Conv2dLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 
   auto& vInputSize = vInputSizes.front();
   auto bInput = true;
-  if (!(vInputSizes.size() == 1)) {
-    bInput = false;
-    std::cerr << m_strName << " must have 1 inputs" << std::endl;
-  }
-  if (!(vInputSize.size() == 3 || vInputSize.size() == 4)) {
-    bInput = false;
-    std::cerr << "Expected 3D (unbatched) or 4D (batched) input "
-              << "but got input of size " << vInputSize.back() << std::endl;
-  }
+//  if (!(vInputSizes.size() == 1)) {
+//    bInput = false;
+//    std::cerr << m_strName << " must have 1 inputs" << std::endl;
+//  }
+//  if (!(vInputSize.size() == 3 || vInputSize.size() == 4)) {
+//    bInput = false;
+//    std::cerr << "Expected 3D (unbatched) or 4D (batched) input "
+//              << "but got input of size " << vInputSize.back() << std::endl;
+//  }
 
-  //&& vInputSize[vInputSize.size() - 1] > lKernel[1].toUInt()
-  //&& vInputSize[vInputSize.size() - 2] > lKernel[0].toUInt()
+//  //&& vInputSize[vInputSize.size() - 1] > lKernel[1].toUInt()
+//  //&& vInputSize[vInputSize.size() - 2] > lKernel[0].toUInt()
 
-  if (!(vInputSize[vInputSize.size() - 3] == sInput)) {
-    bInput = false;
-    std::cerr << "Expected Input: " << vInputSize[vInputSize.size() - 3]
-              << std::endl;
-  }
-  if (!(sInput % sGroups == 0)) {
-    bInput = false;
-    std::cerr << "Input must be divisible by groups " << sInput << " "
-              << sGroups << std::endl;
-  }
-  if (!(sOutput % sGroups == 0)) {
-    bInput = false;
-    std::cerr << "Output must be divisible by groups" << sOutput << " "
-              << sGroups << std::endl;
-  }
+//  if (!(vInputSize[vInputSize.size() - 3] == sInput)) {
+//    bInput = false;
+//    std::cerr << "Expected Input: " << vInputSize[vInputSize.size() - 3]
+//              << std::endl;
+//  }
+//  if (!(sInput % sGroups == 0)) {
+//    bInput = false;
+//    std::cerr << "Input must be divisible by groups " << sInput << " "
+//              << sGroups << std::endl;
+//  }
+//  if (!(sOutput % sGroups == 0)) {
+//    bInput = false;
+//    std::cerr << "Output must be divisible by groups" << sOutput << " "
+//              << sGroups << std::endl;
+//  }
   return bInput;
 }
 
-std::vector<std::size_t> Conv2dLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
+std::vector<std::size_t> Conv3dLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const ///@todo
 {
   auto& vInputSize = vInputSizes.front();
   assert(vInputSize.size() > 1);

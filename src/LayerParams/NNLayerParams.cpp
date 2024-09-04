@@ -97,6 +97,7 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeConv2d()
                                           QList<QVariant>{0, 0}, QVariant::Type::List},
                                   NNParam{"Dilation", "dilation",
                                           QList<QVariant>{1, 1}, QVariant::Type::List},
+                                  NNParam{"Groups", "groups", 1},
                                   NNParam{"Bias", "bias", true, QVariant::Type::Bool},
                                   NNParam{"Padding Mode", "padding_mode",
                                           PaddingMode{static_cast<e_padding_mode>(0)}.toString(),
@@ -221,6 +222,7 @@ std::shared_ptr<NNLayerParams> NNLayerParams::makeMyRecurrent()
 std::shared_ptr<NNLayerParams> NNLayerParams::createLayer()
 {
 //  m_fabricLayer->create();
+  return std::make_shared<LinearLayerParams>();
 }
 
 void NNLayerParams::setName(const std::string& strName) noexcept

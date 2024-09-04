@@ -124,6 +124,8 @@ void MainWidget::createConnections()
   bRes &= static_cast<bool>(connect(m_pConstructorWidget, SIGNAL(startCalculation()), m_pGlobalWarningWidget, SLOT(clearWarnings())));
   bRes &= static_cast<bool>(connect(m_pConstructorWidget, SIGNAL(compliteCalculation()), m_pGlobalWarningWidget, SLOT(printWarnings())));
 
+  bRes &= static_cast<bool>(connect(m_pCreateLayerWidget, SIGNAL(treeWidgetItem(std::vector<QString>)), m_pConstructorWidget, SIGNAL(treeWidgetItem(std::vector<QString>))));
+
   assert(bRes);
 }
 

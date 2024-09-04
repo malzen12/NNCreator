@@ -16,20 +16,20 @@ CreateLayerWidget::CreateLayerWidget() {
 }
 
 void CreateLayerWidget::createItem(QTreeWidgetItem *item, int column) {
-  auto modif = QGuiApplication::keyboardModifiers();
-  std::vector<QString> tags{};
   if (item->childCount() == 0) {
+    std::vector<QString> tags{};
     auto parent = item;
     while (parent != nullptr) {
       tags.push_back(parent->data(column, Qt::DisplayRole).toString());
       parent = parent->parent();
     }
+    std::reverse(tags.begin(), tags.end());
+    for (const auto &str : tags) {
+      std::cout << str.toStdString() << ' ';
+    }
+    emit treeWidgetItem(tags);
+    std::cout << std::endl;
   }
-  std::reverse(tags.begin(), tags.end());
-  for(const auto& str : tags){
-    std::cout << str.toStdString() << ' ';
-  }
-  std::cout << std::endl;
 }
 
 
