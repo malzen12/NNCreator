@@ -1,140 +1,164 @@
 #include "Branch.h"
 
-Branch::Branch(const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& vLayers,
-               const std::unordered_map<std::size_t, std::size_t>& vLayerInputCounter)
-  :vLayers(vLayers), vLayerInputCounter(vLayerInputCounter)
-{}
+Branch::Branch(const HashMapOfHashSet& vLayers, const HashMap& vLayerInputCounter)
+    : m_layersForward(vLayers)
+    , m_layerInputCounter(vLayerInputCounter) {}
 
-void Branch::goToFirstUnhandledUntilFindMerge(std::size_t iCurrent, std::size_t branchValue){
-  if(isNormal(iCurrent)){
-    vLayersBranch[iCurrent].push_back(branchValue);
-    if(!vLayers.at(iCurrent).empty()){
-      addToQueueIfSplitter(*vLayers.at(iCurrent).cbegin());
-      goToFirstUnhandledUntilFindMerge(*vLayers.at(iCurrent).cbegin(), vLayersBranch[iCurrent].front());
-    }
-    return;
-  }
-  if(isMerger(iCurrent)){
-    mergerMap[iCurrent].push_back(branchValue);
-    addToQueueIfMergerIsFull(iCurrent);
-    return;
-  }
-
-  if(isNotVisited(iCurrent)){
-    if(vLayersBranch[iCurrent].empty())//if first enter
-      vLayersBranch[iCurrent].push_back(branchValue);
-    addToQueueIfSplitter(*vLayers.at(iCurrent).cbegin());
-    goToFirstUnhandledUntilFindMerge(*vLayers.at(iCurrent).cbegin(), vLayersBranch[iCurrent].front());
-//    for(auto it = std::next(vLayers.at(iCurrent).cbegin()), ite = vLayers.at(iCurrent).cend(); it != ite; ++it)
-//      addToQueueIfSplitter(*it);
-    addToQueueIfSplitter(*std::next(vLayers.at(iCurrent).cbegin()));
-  }else if(isVisitedOnce(iCurrent)){
-    vLayersBranch[iCurrent].push_back(m_branchValue);
-    goToFirstUnhandledUntilFindMerge(*std::next(vLayers.at(iCurrent).cbegin()), m_branchValue);
-    activeBranchSet.insert(m_branchValue++);
-  }
-  ++splitterMap[iCurrent];
-}
-
-void Branch::splitter(std::size_t iCurrent)
-{
-  while(!splitterQueue.empty()){
-    goToFirstUnhandledUntilFindMerge(iCurrent, vLayersBranch[iCurrent].front());
-
-    if(isNormal(iCurrent) || isCompleted(iCurrent))
-      splitterQueue.pop();
-    iCurrent = splitterQueue.front();
-  }
-}
-
-void Branch::merger()
-{
-  while(!mergerQueue.empty()){
-    auto iCurrent = mergerQueue.front();
-    mergeCalculate(iCurrent);
-    if(!vLayers.at(iCurrent).empty()){
-      std::size_t temp = *vLayers.at(iCurrent).cbegin();
-      std::size_t branch = vLayersBranch[iCurrent].front();
-      if(isMerger(temp)){
-        mergerMap[temp].push_back(branch);
-        if(!isExit(temp))
-          addToQueueIfMergerIsFull(temp);
-        else
-          mergeCalculate(temp);
-      }else if(isSplitter(temp)){
-        vLayersBranch[temp].push_back(branch);
-        splitterQueue.push(temp);
-      }
-    }
-    mergerQueue.pop();
-  }
-}
-
-void Branch::clear()
-{
-  vLayersBranch.clear();
-  splitterMap.clear();
-  mergerMap.clear();
-  activeBranchSet.clear();
-  m_branchValue = 0;
-}
-
-void Branch::init(std::size_t head)
-{
-  splitterQueue.push(head);
-  vLayersBranch[head].push_back(0);
-  activeBranchSet.insert(m_branchValue++);
-}
-
-BranchReturnValue Branch::calculate(std::size_t head){
+auto Branch::calculate(KeyType head) -> BranchReturnValue {
   clear();
   init(head);
 
-  while(!splitterQueue.empty() || !mergerQueue.empty()){
-    splitter(splitterQueue.front());
-    merger();
-    m_branchValue = !activeBranchSet.empty() ? *activeBranchSet.rbegin() + 1 : 0;
+  while (! m_splitterQueue.empty() || ! m_mergerQueue.empty()) {
+    split(m_splitterQueue.front());
+    merge();
+    m_branchValue = ! m_activeBranchSet.empty() ? *m_activeBranchSet.rbegin() + 1 : 0;
   }
-  BranchReturnValue result;
-  result.mergerMap = std::move(mergerMap);
-  result.vLayersBranch = std::move(vLayersBranch);
+  BranchReturnValue result{std::move(m_merger), std::move(m_layersBranch)};
   return result;
 }
 
-void Branch::addToQueueIfSplitter(std::size_t value){
-  if(vLayers.at(value).size() == 2)
-    splitterQueue.push(value);
-};
-void Branch::addToQueueIfMergerIsFull(std::size_t value){
-  if(mergerMap[value].size() == 2)
-    mergerQueue.push(value);
-};
+/*!
+ * Take first unhandled and go deep down until find Merger.
+ * When step on new vertex add to queue all children.
+ */
+void Branch::bypassGraph(KeyType index, KeyType branchValue) {
+  if (isNormal(index)) {
+    ifNormal(index, branchValue);
+    return;
+  }
+  if (isMerger(index)) {
+    ifMerger(index, branchValue);
+    return;
+  }
+  if (isNotVisited(index))
+    firstVisit(index, branchValue);
+  else if (isVisitedOnce(index))
+    subsequentVisit(index);
 
-bool Branch::isSplitter(std::size_t value){
-  return vLayers.at(value).size() == 2;
-}
-bool Branch::isMerger(std::size_t value){
-  return vLayers.at(value).size() <= 1;
-}
-bool Branch::isExit(std::size_t value){
-  return vLayers.at(value).size() == 0;
-}
-bool Branch::isNormal(std::size_t value){
-  return vLayers.at(value).size() <= 1
-      && vLayerInputCounter.at(value) <= 1;
+  ++m_splitter[index];
 }
 
-void Branch::mergeCalculate(std::size_t index){
-  vLayersBranch[index].push_back(std::min(mergerMap[index].front(), mergerMap[index].back()));
-  activeBranchSet.erase(std::max(mergerMap[index].front(), mergerMap[index].back()));
-};
+void Branch::split(KeyType index) {
+  while (! m_splitterQueue.empty()) {
+    auto current = hashSetFirst(m_layersBranch.at(index));
+    bypassGraph(index, current);
+    ifCompletePopQueue(index);
+    index = m_splitterQueue.front();
+  }
+}
 
-bool Branch::isNotVisited(std::size_t value){
-  return splitterMap.find(value) == splitterMap.end();
+void Branch::ifCompletePopQueue(KeyType index) {
+  if (isNormal(index) || isCompleted(index)) m_splitterQueue.pop();
 }
-bool Branch::isVisitedOnce(std::size_t value){
-  return splitterMap[value] == 1;
+
+void Branch::merge() {
+  while (! m_mergerQueue.empty()) {
+    auto index = m_mergerQueue.front();
+    mergeCalculate(index);
+    if (m_layersForward.at(index).empty()) {
+      m_mergerQueue.pop();
+      return;
+    }
+    auto next = hashSetFirst(m_layersForward.at(index));
+    auto branch = hashSetFirst(m_layersBranch.at(index));
+    if (isMerger(next))
+      ifMergerInMerge(next, branch);
+    else if (isSplitter(next))
+      ifSplitterInMerge(next, branch);
+    m_mergerQueue.pop();
+  }
 }
-bool Branch::isCompleted(std::size_t value){
-  return splitterMap[value] == 2;
+
+void Branch::ifMergerInMerge(KeyType index, KeyType branchValue) {
+  m_merger[index].insert(branchValue);
+  if (! isExit(index))
+    addToQueueIfMergerIsFull(index);
+  else
+    mergeCalculate(index);
 }
+
+void Branch::ifSplitterInMerge(KeyType index, KeyType branchValue) {
+  m_layersBranch[index].insert(branchValue);
+  m_splitterQueue.push(index);
+}
+
+void Branch::clear() {
+  m_layersBranch.clear();
+  m_splitter.clear();
+  m_merger.clear();
+  m_activeBranchSet.clear();
+  m_branchValue = 0;
+}
+
+void Branch::init(KeyType head) {
+  m_splitterQueue.push(head);
+  m_layersBranch[head].insert(0);
+  m_activeBranchSet.insert(m_branchValue++);
+}
+
+void Branch::addToQueueIfSplitter(KeyType value) {
+  if (m_layersForward.at(value).size() == 2) m_splitterQueue.push(value);
+}
+
+void Branch::addToQueueIfMergerIsFull(KeyType value) {
+  if (m_merger[value].size() == 2) m_mergerQueue.push(value);
+}
+
+void Branch::mergeCalculate(KeyType index) {
+  KeyType first = hashSetFirst(m_merger.at(index));
+  KeyType second = hashSetSecond(m_merger.at(index));
+  m_layersBranch[index].insert(std::min(first, second));
+  m_activeBranchSet.erase(std::max(first, second));
+}
+
+void Branch::ifNormal(KeyType index, KeyType branchValue) {
+  m_layersBranch[index].insert(branchValue);
+  if (auto hashSet = m_layersForward.at(index); ! hashSet.empty()) {
+    auto next = hashSetFirst(hashSet);
+    addToQueueIfSplitter(next);
+    bypassGraph(next, hashSetFirst(hashSet));
+  }
+}
+
+void Branch::ifMerger(KeyType index, KeyType branchValue) {
+  m_merger[index].insert(branchValue);
+  addToQueueIfMergerIsFull(index);
+}
+
+void Branch::firstVisit(KeyType index, KeyType branchValue) {
+  ifBranchIsEmpty(index, branchValue);
+  auto next = hashSetFirst(m_layersForward.at(index));
+  addToQueueIfSplitter(next);
+  auto branch = hashSetFirst(m_layersBranch.at(index));
+  bypassGraph(next, branch);
+  auto other = hashSetSecond(m_layersForward.at(index));
+  addToQueueIfSplitter(other);
+}
+
+void Branch::ifBranchIsEmpty(KeyType index, KeyType branchValue) {
+  if (m_layersBranch.at(index).empty()) // if first enter
+    m_layersBranch[index].insert(branchValue);
+}
+
+void Branch::subsequentVisit(KeyType index) {
+  m_layersBranch[index].insert(m_branchValue);
+  auto next = hashSetSecond(m_layersForward.at(index));
+  bypassGraph(next, m_branchValue);
+  m_activeBranchSet.insert(m_branchValue++);
+}
+
+bool Branch::isSplitter(KeyType index) const { return m_layersForward.at(index).size() == 2; }
+
+bool Branch::isMerger(KeyType index) const { return m_layersForward.at(index).size() <= 1; }
+
+bool Branch::isExit(KeyType index) const { return m_layersForward.at(index).size() == 0; }
+
+bool Branch::isNormal(KeyType index) const {
+  return m_layersForward.at(index).size() <= 1 && m_layerInputCounter.at(index) <= 1;
+}
+
+bool Branch::isNotVisited(KeyType index) const { return m_splitter.find(index) == m_splitter.end(); }
+
+bool Branch::isVisitedOnce(KeyType index) const { return m_splitter.at(index) == 1; }
+
+bool Branch::isCompleted(KeyType index) const { return m_splitter.at(index) == 2; }

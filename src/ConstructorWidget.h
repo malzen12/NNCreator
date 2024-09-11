@@ -1,87 +1,93 @@
 #pragma once
 
-#include <QWidget>
-#include <QScrollArea>
-#include <QMenu>
-#include <QGridLayout>
-
-
-
-#include "NNLayerWidget.h"
-#include "ConstructorWorkSpace.h"
-
-
 #include "ConstructorWidgetHelper.h"
+#include "ConstructorWorkSpace.h"
+#include "FabricLayer.h"
+#include "NNLayerWidget.h"
+#include <QGridLayout>
+#include <QScrollArea>
+#include <QWidget>
 
-
-
-class ConstructorWidget: public QWidget
-{
+class ConstructorWidget : public QWidget {
   Q_OBJECT
 
   using bfs_proc = std::function<void(NNLayerWidget*, NNLayerWidget*)>;
+  using KeyType = std::size_t;
+  using Set = std::set<KeyType>;
+  using Vector = std::vector<KeyType>;
+  using HashSet = std::unordered_set<KeyType>;
+  using HashMapOfHashSet = std::unordered_map<KeyType, HashSet>;
+  using HashMap = std::unordered_map<KeyType, KeyType>;
+  using Queue = std::queue<KeyType>;
+  using NNLayerContainer = std::unordered_map<KeyType, NNLayerWidget*>;
+  using NNLayerHashSet = std::unordered_set<NNLayerWidget*>;
 
 public:
   ConstructorWidget();
 
-  std::string makeXmlString() const;
-  std::string makePyString();
+  auto makeXmlString() const -> std::string;
+  auto makePyString() -> std::string;
   bool isEmpty() const noexcept;
+
+  void updateParamWidget();
 
 signals:
   void paramsChanged(const std::shared_ptr<NNLayerParams>&);
+  void changeActiveLayer(HashSet);
+  void clearActiveLayer();
+  void clearChanged();
   void notValid(const std::string&);
   void startCalculation();
   void compliteCalculation();
-  void changeActiveLayer(NNLayerWidget*);
   void treeWidgetItem(const std::vector<QString>&);
+  void createCopy(const NNLayerWidget&, const QPoint&);
 
 public slots:
   void onSetParams(const std::shared_ptr<NNLayerParams>& spParams);
   void onDeleteActive();
-  void onDeleteEdge(std::size_t sId);
+  void onDeleteEdge(KeyType sId);
 
-  void onSetInputSize(const std::vector<std::size_t>& vInputSize);
-
+  void onSetInputSize(const Vector& vInputSize);
 
 private slots:
-  void onAddLayer(const QPoint& crPoint, const std::shared_ptr<NNLayerParams>& spParams);
   void onAddLayer(const QPoint& crPoint, NNLayerWidget* pLayer);
-  void onProcActions(QAction* /*pAction*/);
-  void onChangeActive(std::size_t sId);
-  void onMakeForward(std::size_t sId);
-  void onAddToActive(std::size_t sId);
-  void onDelFromActive(std::size_t sId);
+  void onChangeActive(KeyType sId);
+  void onMakeForward(KeyType sId);
+  void onAddToActive(KeyType sId);
+  void onDelFromActive(KeyType sId);
   void onActiveAll();
 
   void onCreateWidget(NNLayerWidget* pLayer);
+  void onCreateWidget(NNLayerWidget* pLayer, QPoint point);
 
 private:
   void initGUI();
   void createConnections();
 
-  void makeActive(std::size_t sId, bool bActive);
+  void makeActive(KeyType sId, bool bActive);
+  void clearActive();
+
+  void copyToBuffer();
+  void createFromBuffer();
 
   void checkSizes();
   void resizeEvent(QResizeEvent*) final;
   void showEvent(QShowEvent*) final;
-  void mouseReleaseEvent(QMouseEvent*) final;
-//  void mouseMoveEvent(QMouseEvent* pEvent) final;
+  void mousePressEvent(QMouseEvent* pEvent) final;
+  void mouseMoveEvent(QMouseEvent* pEvent) final;
+  void mouseReleaseEvent(QMouseEvent* pEvent) final;
 
-  void bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc) const;
+  void bfs(KeyType iStart) const;
 
 private:
+  NNLayerContainer m_layers;
+  HashSet m_activeSet;
+  Vector m_vInputSize;
+  using VectorLayerAndPos = std::pair<std::vector<NNLayerWidget>, std::vector<QPoint>>;
+  VectorLayerAndPos m_layersBuffer;
 
   ConstructorWorkSpace* m_pWorkSpace;
 
-  QMenu* m_pMenu;
-  std::unordered_map<std::size_t, NNLayerWidget*> m_vLayers;
-  GraphManager graph{m_vLayers};
-
-  std::unordered_set<std::size_t> m_ActiveSet;
-
-  std::vector<std::size_t> m_vInputSize;
-
+  GraphManager m_graph{m_layers};
   FabricLayer* m_pFabricLayer;
 };
-

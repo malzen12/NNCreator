@@ -1,127 +1,70 @@
 #include "ConstructorWidget.h"
 
-#include <sstream>
+#include <iostream>
 #include <queue>
 #include <set>
-#include <unordered_set>
-#include <unordered_map>
+#include <sstream>
 
 #include <QMouseEvent>
 #include <QPaintEvent>
 #include <QPainter>
-
-
-#include <iostream>
 #include <QShortcut>
 
-#include "Branch.h"
+#include "Macros.h"
 
-static std::size_t get_increment()
-{
-  static std::size_t sIncrement = 0;
-  return sIncrement++;
-}
-
-NNLayerWidget* get_layer(std::size_t sId, std::unordered_map<std::size_t, NNLayerWidget*> vLayers)
-{
-  auto itLayer = std::find_if(vLayers.begin(), vLayers.end(),
-                              [sId](const auto pWdg){
-                                return pWdg.second->getId() == sId;
-                              });
-
-  if (vLayers.end() == itLayer)
-    throw std::runtime_error("invalid id passed _get_layer_");
-
-  return itLayer->second;
-}
-
-void print_params(const std::string& strParam, const std::string& strTag, std::stringstream& rStream)
-{
+void print_params(const std::string& strParam, const std::string& strTag, std::stringstream& rStream) {
   rStream << "<" << strTag << ">" << strParam << "</" << strTag << ">" << std::endl;
 }
 
-void print_params(std::size_t sParam, const std::string& strTag, std::stringstream& rStream)
-{
+void print_params(std::size_t sParam, const std::string& strTag, std::stringstream& rStream) {
   rStream << "<" << strTag << ">" << sParam << "</" << strTag << ">" << std::endl;
 }
 
-void print_params(const std::vector<std::size_t>& vParams, const std::string& strTag, std::stringstream& rStream)
-{
+void print_params(const std::vector<std::size_t>& vParams, const std::string& strTag,
+                  std::stringstream& rStream) {
   rStream << "<" << strTag << ">" << std::endl;
-
-  for (const auto& crParam : vParams)
-    print_params(crParam, "v", rStream);
-
+  for (const auto& crParam : vParams) print_params(crParam, "v", rStream);
   rStream << "</" << strTag << ">" << std::endl;
 }
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 ConstructorWidget::ConstructorWidget()
-  : m_pMenu{new QMenu{this}},
-    m_pFabricLayer{new FabricLayer}
-{
+    : m_pFabricLayer{new FabricLayer} {
   initGUI();
   createConnections();
 
   setMouseTracking(false);
 }
 
-std::string ConstructorWidget::makeXmlString() const
-{
+auto ConstructorWidget::makeXmlString() const -> std::string {
   std::stringstream Stream;
   print_params(m_vInputSize, "data_size", Stream);
-
   Stream << "<layers>" << '\n';
-  for(const auto [id, pCurrent]: m_vLayers){
+  for (const auto [id, pCurrent] : m_layers) {
     Stream << "<l>" << std::endl;
     print_params(id, "id", Stream);
-
     Stream << pCurrent->getParams()->makeXmlString();
-
     Stream << "<forwards>" << '\n';
-    for (auto pLayer : pCurrent->getForward())
-      print_params(pLayer->getId(), "v", Stream);
+    for (auto id : m_graph.getForward(id)) print_params(id, "v", Stream);
     Stream << "</forwards>" << '\n';
-
     Stream << "</l>" << '\n';
   }
   Stream << "</layers>" << std::endl;
-
   return Stream.str();
 }
 
-std::string ConstructorWidget::makePyString()
-{
+auto ConstructorWidget::makePyString() -> std::string {
   emit startCalculation();
-  auto result{graph.print()};
+  auto result{m_graph.print()};
   emit compliteCalculation();
   return result;
 }
 
+bool ConstructorWidget::isEmpty() const noexcept { return m_layers.empty(); }
 
-bool ConstructorWidget::isEmpty () const noexcept
-{
-  return m_vLayers.empty();
-}
-
-void ConstructorWidget::onSetParams(const std::shared_ptr<NNLayerParams>& spParams)
-{
+void ConstructorWidget::onSetParams(const std::shared_ptr<NNLayerParams>& spParams) {
   emit startCalculation();
-  auto active = *m_ActiveSet.cbegin();
-  auto pLayerWidget = m_vLayers[active];
+  auto active = *m_activeSet.cbegin();
+  auto pLayerWidget = m_layers[active];
 
   pLayerWidget->setParams(spParams);
 
@@ -130,27 +73,20 @@ void ConstructorWidget::onSetParams(const std::shared_ptr<NNLayerParams>& spPara
   emit compliteCalculation();
 }
 
-void ConstructorWidget::onDeleteActive()
-{
+void ConstructorWidget::onDeleteActive() {
   emit startCalculation();
-  if (m_vLayers.empty())
-    return ;
-
-  while(!m_ActiveSet.empty()){
-    const auto active = *m_ActiveSet.cbegin();
-    auto pDeletingLayer = m_vLayers[active];
-
-    for (auto [_, pLayer] : m_vLayers)
-      pLayer->removeForward(pDeletingLayer);
-
+  if (m_layers.empty()) return;
+  while (! m_activeSet.empty()) {
+    const auto active = *m_activeSet.cbegin();
+    auto pDeletingLayer = m_layers[active];
     pDeletingLayer->deleteLayer();
-    graph.deleteVertex(active);
-    m_vLayers.erase(active);
-    onDelFromActive(active);
+    m_graph.deleteVertex(active);
+    m_layers.erase(active);
+    m_activeSet.erase(active);
   }
-  if(!m_vLayers.empty()){
-    m_ActiveSet.insert(m_vLayers.cbegin()->first);
-    makeActive(m_vLayers.cbegin()->first, true);
+  if (! m_layers.empty()) {
+    const auto id = m_layers.cbegin()->first;
+    m_layers.at(id)->toActive();
   }
 
   checkSizes();
@@ -158,152 +94,58 @@ void ConstructorWidget::onDeleteActive()
   emit compliteCalculation();
 }
 
-void ConstructorWidget::onDeleteEdge(std::size_t sId)
-{
+void ConstructorWidget::onDeleteEdge(KeyType sId) {
   emit startCalculation();
-  if (m_vLayers.empty())
-    return ;
-  auto pDeletingLayer = m_vLayers[sId];
-
-
-  for(const auto active : m_ActiveSet){
-    m_vLayers[active]->removeForward(pDeletingLayer);
-    graph.deleteEdge(active, sId);
-  }
-
+  if (m_layers.empty()) return;
+  for (const auto active : m_activeSet) m_graph.deleteEdge(active, sId);
   checkSizes();
   m_pWorkSpace->update();
   emit compliteCalculation();
 }
 
+void ConstructorWidget::onSetInputSize(const Vector& vInputSize) { m_vInputSize = vInputSize; }
 
-void ConstructorWidget::onSetInputSize(const std::vector<std::size_t>& vInputSize)
-{
-  m_vInputSize = vInputSize;
-}
-
-void ConstructorWidget::onAddLayer(const QPoint& crPoint, const std::shared_ptr<NNLayerParams>& spParams)
-{
-  emit startCalculation();
-  auto id = NNLayerWidget::createId();
-  auto pLayer = new NNLayerWidget{id, spParams};
-  m_pWorkSpace->add(crPoint, pLayer);
-
-  auto bRes = true;
-
-  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(becomeActive(std::size_t)), SLOT(onChangeActive(std::size_t))));
-  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(makeForward(std::size_t)), SLOT(onMakeForward(std::size_t))));
-  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(addToActive(std::size_t)), SLOT(onAddToActive(std::size_t))));
-  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(delFromActive(std::size_t)), SLOT(onDelFromActive(std::size_t))));
-
-  assert(bRes);
-
-  graph.addVertex(id);
-  m_vLayers[id] = pLayer;
-  onChangeActive(id);
-
-  checkSizes();
-
-  m_pWorkSpace->update();
-  emit compliteCalculation();
-}
-
-void ConstructorWidget::onAddLayer(const QPoint& crPoint, NNLayerWidget* pLayer)
-{
+void ConstructorWidget::onAddLayer(const QPoint& crPoint, NNLayerWidget* pLayer) {
   emit startCalculation();
   auto id = pLayer->getId();
   m_pWorkSpace->add(crPoint, pLayer);
-
-  auto bRes = true;
-
-  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(becomeActive(std::size_t)), SLOT(onChangeActive(std::size_t))));
-  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(makeForward(std::size_t)), SLOT(onMakeForward(std::size_t))));
-  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(addToActive(std::size_t)), SLOT(onAddToActive(std::size_t))));
-  bRes &= static_cast<bool>(connect(pLayer, SIGNAL(delFromActive(std::size_t)), SLOT(onDelFromActive(std::size_t))));
-
-  assert(bRes);
-
-  graph.addVertex(id);
-  m_vLayers[id] = pLayer;
-  onChangeActive(id);
+  // clang-format off
+  CONNECT_CHECK(connect(pLayer, SIGNAL(becomeActive(KeyType)),  SLOT(onChangeActive(KeyType))));
+  CONNECT_CHECK(connect(pLayer, SIGNAL(makeForward(KeyType)),   SLOT(onMakeForward(KeyType))));
+  CONNECT_CHECK(connect(pLayer, SIGNAL(addToActive(KeyType)),   SLOT(onAddToActive(KeyType))));
+  CONNECT_CHECK(connect(pLayer, SIGNAL(delFromActive(KeyType)), SLOT(onDelFromActive(KeyType))));
+  
+  CONNECT_CHECK(connect(pLayer,       SIGNAL(collectIsMoved(KeyType)),
+                        m_pWorkSpace, SLOT(onSendIsMoved(KeyType))));
+  CONNECT_CHECK(connect(pLayer,       SIGNAL(setIsMoved(bool)),
+                        m_pWorkSpace, SLOT(onSetIsMoved(bool))));
+  CONNECT_CHECK(connect(pLayer,       SIGNAL(grabbed(KeyType, bool)),
+                        m_pWorkSpace, SLOT(onSetGrabbed(KeyType, bool))));
+  CONNECT_CHECK(connect(pLayer,       SIGNAL(waitToDrag()),
+                        m_pWorkSpace, SLOT(dragInit())));
+  // clang-format on
+  m_graph.addVertex(id);
+  m_layers[id] = pLayer;
+  clearActive();
+  onAddToActive(id);
 
   checkSizes();
-
   m_pWorkSpace->update();
   emit compliteCalculation();
 }
-void ConstructorWidget::onProcActions(QAction* pAction)
-{
-  if ("Make linear" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeLinear());
-  else if ("Make bilinear" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeBilinear());
-  else if ("Make conv1d" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConv1d());
-  else if ("Make conv2d" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeConv2d());
-  else if ("Make pool" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makePool());
-  else if ("Make pool2d" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makePool2d());
-  else if ("Make embedding" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeEmbedding());
-  else if ("Make reshape" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeReshape());
-  else if ("Make normalization" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeNormalization());
-  else if ("Make activation" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeActivation());
-  else if ("Make dropout" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeDropout());
-  else if ("Make flatten" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeFlatten());
-  else if ("Make recurrent" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeRecurrent());
-  else if ("Make MyRecurrent" == pAction->text())
-    onAddLayer(mapFromGlobal(m_pMenu->pos()), NNLayerParams::makeMyRecurrent());
-  else
-    throw std::runtime_error("unknown action passed");
+
+void ConstructorWidget::onChangeActive(KeyType sId) {
+  clearActive();
+  // if (sId == SIZE_MAX) return;
+  m_layers.at(sId)->toActive();
 }
 
-void ConstructorWidget::onChangeActive(std::size_t sId)
-{
-  if(m_ActiveSet.find(sId) != m_ActiveSet.cend())
-    return;
-  while(!m_ActiveSet.empty()){
-    auto id = *m_ActiveSet.cbegin();
-    m_ActiveSet.erase(id);
-//    onDelFromActive(id);
-    if(sId != id)
-      makeActive(id, false);
-  }
-//  emit changeActiveLayer(nullptr);
-//  emit paramsChanged(nullptr);
-
-  if(sId == SIZE_MAX)
-    return;
-
-//  onAddToActive(sId);
-  m_ActiveSet.insert(sId);
-  makeActive(sId, true);
-}
-
-void ConstructorWidget::onMakeForward(std::size_t sId)
-{
+void ConstructorWidget::onMakeForward(KeyType sId) {
   emit startCalculation();
-
-  for(const auto active : m_ActiveSet){
-    auto pActive = m_vLayers[active];
-    auto pForward = m_vLayers[sId];
-
-    if (!pActive || !pForward)
-      return;
-    graph.addEdge(active, sId);
-    pActive->addForward(pForward);
-  }
-  if(m_ActiveSet.size() == 1){
-    auto pActive = m_vLayers[*m_ActiveSet.cbegin()];
-    emit changeActiveLayer(pActive);
+  for (const auto active : m_activeSet) m_graph.addEdge(active, sId);
+  if (m_activeSet.size() == 1) {
+    const auto index = *m_activeSet.cbegin();
+    emit changeActiveLayer(m_graph.getForward(index));
   }
 
   checkSizes();
@@ -311,221 +153,157 @@ void ConstructorWidget::onMakeForward(std::size_t sId)
   emit compliteCalculation();
 }
 
-void ConstructorWidget::onAddToActive(std::size_t sId)
-{
-  m_ActiveSet.insert(sId);
-  if(m_ActiveSet.size() == 1){
-    auto pLayerWidget = m_vLayers[sId];
-    emit changeActiveLayer(pLayerWidget);
+void ConstructorWidget::onAddToActive(KeyType sId) {
+  m_activeSet.insert(sId);
+  updateParamWidget();
+}
+
+void ConstructorWidget::onDelFromActive(KeyType sId) {
+  m_activeSet.erase(sId);
+  updateParamWidget();
+}
+
+void ConstructorWidget::updateParamWidget() {
+  if (m_activeSet.size() == 1) {
+    const auto active = *m_activeSet.cbegin();
+    const auto pLayerWidget = m_layers[active];
+    emit changeActiveLayer(m_graph.getForward(active));
     emit paramsChanged(pLayerWidget->getParams());
-  }else{
-    emit changeActiveLayer(nullptr);
-    emit paramsChanged(nullptr);
+  } else {
+    emit clearActiveLayer();
+    emit clearChanged();
   }
 }
 
-void ConstructorWidget::onDelFromActive(std::size_t sId)
-{
-  m_ActiveSet.erase(sId);
-  if(m_ActiveSet.size() != 1){
-    emit changeActiveLayer(nullptr);
-    emit paramsChanged(nullptr);
-  }else{
-    auto pLayerWidget = m_vLayers[*m_ActiveSet.cbegin()];
-    emit changeActiveLayer(pLayerWidget);
-    emit paramsChanged(pLayerWidget->getParams());
-  }
+void ConstructorWidget::onActiveAll() {
+  for (const auto [id, pLayer] : m_layers) pLayer->toActive();
 }
 
-void ConstructorWidget::onActiveAll()
-{
-  for(const auto [id, pLayer]: m_vLayers){
-    pLayer->toActive();
-  }
-}
-
-void ConstructorWidget::onCreateWidget(NNLayerWidget* pLayer)
-{
-  QPoint point{this->rect().center()};
-  std::cout << point.x() << "\t" << point.y() << std::endl;
-
+void ConstructorWidget::onCreateWidget(NNLayerWidget* pLayer) {
+  QPoint point = QPoint{this->rect().center()};
   onAddLayer(point, pLayer);
 }
 
-void ConstructorWidget::initGUI()
-{
+void ConstructorWidget::onCreateWidget(NNLayerWidget* pLayer, QPoint point) { onAddLayer(point, pLayer); }
+
+void ConstructorWidget::initGUI() {
   auto pLayout = new QGridLayout{this};
-  m_pWorkSpace = new ConstructorWorkSpace{m_vLayers, m_ActiveSet, m_pMenu};
+  m_pWorkSpace = new ConstructorWorkSpace{m_layers, m_graph, m_activeSet};
   m_pWorkSpace->setAutoFillBackground(false);
   auto temp = new QScrollArea;
   temp->setWidget(m_pWorkSpace);
   m_pWorkSpace->show();
   pLayout->addWidget(temp);
   pLayout->setMargin(0);
-
-  m_pMenu->addAction(new QAction{"Make linear"});
-  m_pMenu->addAction(new QAction{"Make bilinear"});
-  m_pMenu->addAction(new QAction{"Make conv1d"});
-  m_pMenu->addAction(new QAction{"Make conv2d"});
-  m_pMenu->addAction(new QAction{"Make pool"});
-  m_pMenu->addAction(new QAction{"Make pool2d"});
-  m_pMenu->addAction(new QAction{"Make embedding"});
-  m_pMenu->addAction(new QAction{"Make reshape"});
-  m_pMenu->addAction(new QAction{"Make normalization"});
-  m_pMenu->addAction(new QAction{"Make activation"});
-  m_pMenu->addAction(new QAction{"Make dropout"});
-  m_pMenu->addAction(new QAction{"Make flatten"});
-  m_pMenu->addAction(new QAction{"Make recurrent"});
-  m_pMenu->addAction(new QAction{"Make MyRecurrent"});
-
-  setContextMenuPolicy(Qt::CustomContextMenu);
 }
 
-void ConstructorWidget::createConnections()
-{
-  auto bRes = true;
+void ConstructorWidget::createConnections() {
+  // clang-format off
+  CONNECT_CHECK(connect(&m_graph, SIGNAL(notValid(std::string)), SIGNAL(notValid(std::string))));
+  
+  CONNECT_CHECK(connect(new QShortcut{QKeySequence{Qt::CTRL + Qt::Key_A}, this},  &QShortcut::activated,
+                        [&]() { onActiveAll(); }));
+  CONNECT_CHECK(connect(new QShortcut{QKeySequence{Qt::CTRL + Qt::Key_C}, this},  &QShortcut::activated,
+                        [&]() { copyToBuffer(); }));
+  CONNECT_CHECK(connect(new QShortcut{QKeySequence{Qt::CTRL + Qt::Key_V}, this},  &QShortcut::activated,
+                        [&]() { createFromBuffer(); }));
+  CONNECT_CHECK(connect(new QShortcut{QKeySequence{Qt::Key_Delete}, this},        &QShortcut::activated,
+                        [&]() { onDeleteActive(); }));
 
-  bRes &= static_cast<bool>(connect(m_pMenu, SIGNAL(triggered(QAction*)), SLOT(onProcActions(QAction*))));
-  bRes &= static_cast<bool>(connect(&graph, SIGNAL(notValid(std::string)), SIGNAL(notValid(std::string))));
-  bRes &= static_cast<bool>(connect(new QShortcut{QKeySequence{Qt::CTRL + Qt::Key_A}, this}, &QShortcut::activated, [&](){onActiveAll();}));
-
-  bRes &= static_cast<bool>(connect(this, SIGNAL(treeWidgetItem(std::vector<QString>)), m_pFabricLayer, SLOT(create(std::vector<QString>))));
-  bRes &= static_cast<bool>(connect(m_pFabricLayer, SIGNAL(createWidget(NNLayerWidget*)), this, SLOT(onCreateWidget(NNLayerWidget*))));
-
-  assert(bRes);
+  CONNECT_CHECK(connect(this,           SIGNAL(treeWidgetItem(std::vector<QString>)),
+                        m_pFabricLayer, SLOT(onCreate(std::vector<QString>))));
+  // CONNECT_CHECK(connect(this,           SIGNAL(createCopy(const NNLayerWidget&, const QPoint&)),
+  //                       m_pFabricLayer, SLOT(onCreateCopy(const NNLayerWidget&, const QPoint&))));
+  
+  CONNECT_CHECK(connect(m_pFabricLayer, SIGNAL(createWidget(NNLayerWidget*)),
+                        this,           SLOT(onCreateWidget(NNLayerWidget*))));
+  CONNECT_CHECK(connect(m_pFabricLayer, SIGNAL(createWidget(NNLayerWidget*, QPoint)),
+                        this,           SLOT(onCreateWidget(NNLayerWidget*, QPoint))));
+  // clang-format on
 }
 
-void ConstructorWidget::makeActive(std::size_t sId, bool bActive)
-{
-  if(sId == SIZE_MAX){
-    emit changeActiveLayer(nullptr);
-    emit paramsChanged(nullptr);
+void ConstructorWidget::makeActive(KeyType sId, bool bActive) {
+  if (sId == SIZE_MAX) {
+    emit clearActiveLayer();
+    emit clearChanged();
     return;
   }
-
-  auto pLayerWidget = m_vLayers[sId];
-
+  auto pLayerWidget = m_layers[sId];
   pLayerWidget->makeActive(bActive);
-
-  if (bActive){
-    emit changeActiveLayer(pLayerWidget);
+  if (bActive) {
+    emit changeActiveLayer(m_graph.getForward(sId));
     emit paramsChanged(pLayerWidget->getParams());
   }
 }
 
-
-void ConstructorWidget::checkSizes()
-{
-  for (auto [id, pLayer] : m_vLayers)
-    pLayer->resetInputSize();
-
-  graph.checkSizes(m_vInputSize);
+void ConstructorWidget::clearActive() {
+  for (const auto index : m_activeSet) m_layers[index]->makeActive(false);
+  m_activeSet.clear();
+  emit clearActiveLayer();
+  emit clearChanged();
 }
 
-void ConstructorWidget::resizeEvent(QResizeEvent*)
-{
+void ConstructorWidget::copyToBuffer() {
+  auto& vLayers = m_layersBuffer.first;
+  auto& vPos = m_layersBuffer.second;
+  vLayers.clear();
+  vPos.clear();
+  for (const auto index : m_activeSet) {
+    vLayers.push_back(*m_layers.at(index));
+    vPos.push_back(m_layers.at(index)->pos());
+  }
+}
+
+void ConstructorWidget::createFromBuffer() {
+  auto& vLayers = m_layersBuffer.first;
+  auto& vPos = m_layersBuffer.second;
+  assert(vLayers.size() == vPos.size());
+  const auto size = vLayers.size();
+  KeyType id;
+  for (auto i = 0; i < size; ++i) {
+    vPos[i] += QPoint{10, 10};
+    id = m_pFabricLayer->onCreateCopy(vLayers[i], vPos[i]);
+    onAddToActive(id);
+  }
+}
+
+void ConstructorWidget::checkSizes() {
+  for (auto [id, pLayer] : m_layers) pLayer->resetInputSize();
+  m_graph.checkSizes(m_vInputSize);
+}
+
+void ConstructorWidget::resizeEvent(QResizeEvent*) {
   m_pWorkSpace->setMinimumSize(m_pWorkSpace->parentWidget()->size());
   m_pWorkSpace->resize(m_pWorkSpace->getQSize());
 }
 
-void ConstructorWidget::showEvent(QShowEvent*)
-{
-  resizeEvent(nullptr);
+void ConstructorWidget::showEvent(QShowEvent*) { resizeEvent(nullptr); }
+
+void ConstructorWidget::mousePressEvent(QMouseEvent* pEvent) {
+  std::cerr << "Press Constructor " << QGuiApplication::keyboardModifiers() << std::endl;
 }
 
-void ConstructorWidget::mouseReleaseEvent(QMouseEvent* /*pEvent*/)
-{
-  onChangeActive(SIZE_MAX);
+void ConstructorWidget::mouseMoveEvent(QMouseEvent* pEvent) {
+  std::cerr << "Move Constructor " << QGuiApplication::keyboardModifiers() << std::endl;
 }
 
-//void ConstructorWidget::mouseMoveEvent(QMouseEvent* pEvent)
-//{
-//  NNLayerWidget* pLayer;
-//  if (auto temp = std::find_if(
-//          m_vLayers.begin(), m_vLayers.end(),
-//          [](const auto pLayer) { return pLayer.second->isGrabbed(); });
-//      temp != m_vLayers.end())
-//    pLayer = temp->second;
-//  else
-//    return;
+void ConstructorWidget::mouseReleaseEvent(QMouseEvent* pEvent) {
+  std::cerr << "Release Constructor " << QGuiApplication::keyboardModifiers() << std::endl;
+  clearActive();
+}
 
-//  const int k_margin = 5;
-
-//  QPoint layersPos{m_pWorkSpace->size().width(), m_pWorkSpace->size().height()};
-//  QSize layersPosEnd{};
-
-//  for(const auto i : m_ActiveSet){
-//    auto pCurrent = m_vLayers[i];
-//    layersPos.rx() = std::min(layersPos.x(), pCurrent->pos().x());
-//    layersPos.ry() = std::min(layersPos.y(), pCurrent->pos().y());
-//    layersPosEnd.rwidth() = std::max(layersPosEnd.width(), pCurrent->pos().x() + pCurrent->size().width());
-//    layersPosEnd.rheight() = std::max(layersPosEnd.height(), pCurrent->pos().y() + pCurrent->size().height());
-//  }
-//  QSize layersSize{layersPosEnd};
-//  layersSize.rwidth() -= layersPos.x();
-//  layersSize.rheight() -= layersPos.y();
-//  auto temp = layersPos - pLayer->pos();
-//  auto temp2 = pEvent->pos();
-//  auto temp3 = mapFromGlobal(mapToGlobal(pEvent->pos()));
-//  auto eventWithCorPos = temp3 - pLayer->getGrabbedPos() + temp ;
-//  QPoint shift{eventWithCorPos};
-
-//  if(eventWithCorPos.x() - k_margin < 0)
-//    shift.rx() = k_margin;
-//  if(eventWithCorPos.y() - k_margin < 0)
-//    shift.ry() = k_margin;
-//  if(shift.x() != eventWithCorPos.x() || shift.y() != eventWithCorPos.y())
-//    layersPos = shift;
-
-//  for(const auto i : m_ActiveSet){
-//    auto pCurrent = m_vLayers[i];
-//    auto pos = pCurrent->pos();
-//    pCurrent->move(pos - layersPos + shift);
-//  }
-
-
-//  QPoint resize{0, 0};
-//  auto mainSize = m_pWorkSpace->size();
-//  if(auto tmp = (layersPos.x() + layersSize.width()) - mainSize.width() + k_margin; tmp > 0)
-//    resize.rx() = tmp;
-//  if(auto tmp = (layersPos.y() + layersSize.height()) - mainSize.height() + k_margin; tmp > 0)
-//    resize.ry() = tmp;
-//  if(resize.x() != 0 || resize.y() != 0){
-//    QPoint point = resize + QPoint{m_pWorkSpace->size().width(), m_pWorkSpace->size().height()};
-//    m_pWorkSpace->setWidth(point.x());
-//    m_pWorkSpace->setHeight(point.y());
-//    m_pWorkSpace->resize(point.x(), point.y());
-//  }
-
-
-//  m_pWorkSpace->update();
-//}
-
-
-void ConstructorWidget::bfs(NNLayerWidget* pStart, bfs_proc fCurrentProc, bfs_proc fForwardsProc) const
-{
-  std::set<NNLayerWidget*> VisitedSet;
-  std::queue<NNLayerWidget*> qToVisit;
-  qToVisit.push(pStart);
-  VisitedSet.insert(pStart);
-
-  while(!qToVisit.empty()){
-    auto pCurrent = qToVisit.front();
+void ConstructorWidget::bfs(KeyType iStart) const {
+  std::unordered_set<KeyType> VisitedSet;
+  std::queue<KeyType> qToVisit;
+  qToVisit.push(iStart);
+  VisitedSet.insert(iStart);
+  while (! qToVisit.empty()) {
+    auto iCurrent = qToVisit.front();
     qToVisit.pop();
-
-    if (fCurrentProc)
-      fCurrentProc(pCurrent, nullptr);
-
-    for (auto pNext : pCurrent->getForward()){
-      if (VisitedSet.find(pNext) != VisitedSet.cend())
-        continue;
-
-      VisitedSet.insert(pNext);
-
-      if (fForwardsProc)
-        fForwardsProc(pCurrent, pNext);
-
-      qToVisit.push(pNext);
+    for (auto iNext : m_graph.getForward(iCurrent)) {
+      if (VisitedSet.find(iNext) != VisitedSet.cend()) continue;
+      VisitedSet.insert(iNext);
+      qToVisit.push(iNext);
     }
   }
 }

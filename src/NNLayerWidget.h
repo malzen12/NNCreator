@@ -1,172 +1,81 @@
 #pragma once
 
+#include "NNLayerParams.h"
+#include <QApplication>
 #include <QLabel>
-#include <iostream>
 
-
-#include "LayerParams/BilinearLayerParams.h"
-#include "LayerParams/NNLayerParams.h"
-#include "LayerParams/Conv1dLayerParams.h"
-#include "LayerParams/Conv2dLayerParams.h"
-#include "LinearLayerParams.h"
-#include "qapplication.h"
-
-
-class NNLayerWidget: public QWidget
-{
+class NNLayerWidget : public QWidget {
   Q_OBJECT
+  using KeyType = std::size_t;
+  using Vector = std::vector<KeyType>;
 
 public:
-  explicit NNLayerWidget(std::size_t sId, const std::shared_ptr<NNLayerParams>& spParams);
+  explicit NNLayerWidget(KeyType sId, const std::shared_ptr<NNLayerParams>& spParams);
+  NNLayerWidget(const NNLayerWidget& another);
 
-  std::size_t getId() const;
-  static std::size_t createId(){
-    static std::size_t m_classId = 0;
-    return m_classId++;
-  }
+  static auto makeSizeString(const Vector& vSize = {}) -> QString;
+  static auto createId() -> KeyType;
+
+  // auto copy() const -> NNLayerWidget*;
+
+  auto getId() const -> KeyType;
+  auto getParams() const noexcept -> const std::shared_ptr<NNLayerParams>&;
+  auto getInputSize() const -> const std::vector<Vector>&;
+  auto getGrabbedPos() const noexcept -> const QPoint&;
 
   void setParams(const std::shared_ptr<NNLayerParams>& spParams) noexcept;
-  const std::shared_ptr<NNLayerParams>& getParams() const noexcept;
-  const std::vector<std::vector<std::size_t>>& getInputSize() const;
-
-  void deleteLayer();
+  void setMoved(bool value);
+  void changeId(KeyType id);
 
   bool isGrabbed() const;
   bool isActive() const;
+  bool isMoved() const;
 
   void mousePressEvent(QMouseEvent* pEvent) final;
+  // void mouseMoveEvent(QMouseEvent* pEvent) final;
   void mouseReleaseEvent(QMouseEvent* pEvent) final;
 
   void makeActive(bool bActive);
+  void toActive();
 
-  const QPoint& getGrabbedPos() const noexcept;
-
-  void addForward(NNLayerWidget* pForward);
-  void removeForward(NNLayerWidget* pForward);
-  const std::vector<NNLayerWidget*>& getForward() const noexcept;
+  void deleteLayer();
 
   void resetInputSize();
-  void addInputSize(const std::vector<std::size_t>& vInputSize);
-  std::vector<std::size_t> calcOutputSize() const;
+  void addInputSize(const Vector& vInputSize);
 
-  void toActive();
+  auto calcOutputSize() const -> Vector;
+
 signals:
-  void becomeActive(std::size_t);
-  void makeForward(std::size_t);
-  void addToActive(std::size_t);
-  void delFromActive(std::size_t);
+  void becomeActive(KeyType);
+  void makeForward(KeyType);
+  void addToActive(KeyType);
+  void delFromActive(KeyType);
+  void collectIsMoved(KeyType);
+  void setIsMoved(bool);
+  void grabbed(KeyType, bool);
+  void waitToDrag();
 
 private:
   void initGUI();
   void updateStyle();
+  void releaseCtrlLeft();
+  void pressLeft(QMouseEvent* pEvent);
 
+  auto createName() const -> QString;
 
-  std::size_t m_sId;
-  bool m_bGrabbed;
+private:
+  KeyType m_sId;
   QPoint m_GrabbedPos;
 
-  bool m_bActive;
+  bool m_isActive;
+  bool m_isGrabbed;
+  bool m_isValidParams;
+  bool m_isMoved;
 
   std::shared_ptr<NNLayerParams> m_spParams;
-
-  std::vector<std::vector<std::size_t>> m_vInputSizes;
-  bool m_bValidParams;
-
-  std::vector<NNLayerWidget*> m_vForwards;
+  std::vector<Vector> m_vInputSizes;
 
   QLabel* m_pInputLabel;
   QLabel* m_pNameLabel;
   QLabel* m_pOutputLabel;
-
 };
-
-class FabricLayer : public QObject
-{
-  Q_OBJECT
-public:
-  FabricLayer(){
-    m_FactorMap["Linear"] = &FabricLayer::createLinear;
-    m_FactorMap["Convolution"] = &FabricLayer::createConvolution;
-  }
-public:
-signals:
-  void changeWidget(NNLayerWidget*);
-  void createAndConnectWidget(NNLayerWidget*);
-  void createWidget(NNLayerWidget*);
-public slots:
-  void create(const std::vector<QString>& tags){
-    auto pWidget = createImpl(tags);
-    if (pWidget == nullptr)
-      return;
-    auto modif = QGuiApplication::keyboardModifiers();
-    switch(modif){
-      case Qt::ShiftModifier:
-        emit changeWidget(pWidget);
-        break;
-      case Qt::AltModifier:
-        emit createAndConnectWidget(pWidget);
-        break;
-      case Qt::NoModifier:
-      default:
-        emit createWidget(pWidget);
-    }
-  };
-private:
-  NNLayerWidget* createImpl(const std::vector<QString>& tags){
-    std::size_t index = 0;
-    while(index < tags.size() && tags[index] != m_strType){
-      ++index;
-    }
-    ++index;
-    if(index == tags.size()){
-      std::cerr << "You don't have " << m_strType.toStdString() << " in txt file" << std::endl;
-      return nullptr;
-    }
-    auto type = tags[index];
-    QString layer{};
-    for(++index; index < tags.size(); ++index){
-      layer += tags[index];
-    }
-
-//    if(type == "Linear"){
-//      createLinear(layer);
-
-//    }
-
-
-    if(m_FactorMap.find(type) != m_FactorMap.cend()){
-      return m_FactorMap[type](layer);
-    }else{
-      std::cerr << "You don't have such type of " << type.toStdString() << " in " << m_strType.toStdString()  << std::endl;
-      return nullptr;
-    }
-
-  };
-  static NNLayerWidget* createLinear(const QString& layer){
-    if (layer == "Linear")
-      return new NNLayerWidget{NNLayerWidget::createId(), std::make_shared<LinearLayerParams>()};
-    else if(layer == "Bilinear")
-      return new NNLayerWidget{NNLayerWidget::createId(), std::make_shared<BilinearLayerParams>()};
-    else{
-      std::cerr << "NE" << std::endl;
-      return nullptr;
-    }
-  }
-
-  static NNLayerWidget* createConvolution(const QString& layer){
-    if (layer == "Conv1d")
-      return new NNLayerWidget{NNLayerWidget::createId(), std::make_shared<Conv1dLayerParams>()};
-    else if(layer == "Conv2d")
-      return new NNLayerWidget{NNLayerWidget::createId(), std::make_shared<Conv2dLayerParams>()};
-    else{
-      std::cerr << "NE" << std::endl;
-      return nullptr;
-    }
-  }
-
-private:
-  std::unordered_map<QString, decltype(&FabricLayer::createLinear)> m_FactorMap;
-
-  QString m_strType{"Layer"};
-};
-

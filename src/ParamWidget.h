@@ -1,26 +1,36 @@
 #pragma once
 
-#include <QWidget>
+#include "NNParam.h"
 #include <QLabel>
+#include <QWidget>
 
-#include "LayerParams/NNParam.h"
-
-class ParamWidget : public QWidget
-{
+class ParamWidget : public QWidget {
   Q_OBJECT
 public:
   explicit ParamWidget(const NNParam& crParam);
 
-  const std::string& getName() const noexcept;
+  auto getName() const noexcept -> const std::string&;
 
-  const NNParam& collectValue();
+  auto collectValue() -> const NNParam&;
 
 private:
   void initGUI();
+  void initGuiEnum();
+  void initGuiString();
+  void initGuiUint();
 
+  void collectQList();
+  void collectQString();
+  void collectUInt();
+  void collectDouble();
+  void collectBool();
+
+private:
   NNParam m_Param;
 
   QLabel* m_pNameLabel;
   QWidget* m_pEditorWidget;
+  void initGuiDouble();
+  void initGuiBool();
+  void initGuiQList();
 };
-

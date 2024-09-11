@@ -32,6 +32,12 @@ Conv3dLayerParams::Conv3dLayerParams()
               QVariant::Type::String, true}};
 }
 
+Conv3dLayerParams::Conv3dLayerParams(const std::string& strName, const NNParamContainer& vParams)
+    : NNLayerParams(strName, vParams) {}
+
+auto Conv3dLayerParams::copy() const -> std::shared_ptr<NNLayerParams> {
+  return std::make_shared<Conv3dLayerParams>(m_strName, copyImpl());
+}
 
 bool Conv3dLayerParams::checkInputSize(const InputSizeType& vInputSizes) const ///@todo
 {

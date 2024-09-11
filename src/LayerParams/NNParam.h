@@ -2,35 +2,37 @@
 
 #include <QVariant>
 
-class NNParam
-{
+class NNParam {
 public:
-  NNParam(std::string strName, std::string strHiddenName,
-          QVariant crValue, QVariant::Type Type = QVariant::Type::UInt, bool bEnum = false);
-  NNParam(std::string strName,
-          QVariant crValue, QVariant::Type Type = QVariant::Type::UInt, bool bEnum = false);
+  NNParam(std::string strName, std::string strHiddenName, QVariant crValue,
+          QVariant::Type Type = QVariant::Type::UInt, bool bEnum = false);
+  NNParam(std::string strName, QVariant crValue, QVariant::Type Type = QVariant::Type::UInt,
+          bool bEnum = false);
 
-  const std::string& getName() const noexcept;
-  const std::string& getHiddenName() const noexcept;
-  const QVariant& getValue() const noexcept;
-  QVariant::Type getType() const noexcept;
+  auto getName() const noexcept -> const std::string&;
+  auto getHiddenName() const noexcept -> const std::string&;
+  auto getValue() const noexcept -> const QVariant&;
+  auto getType() const noexcept -> QVariant::Type;
   bool isEnum() const noexcept;
 
   void setValue(const QVariant& crValue);
 
-  const std::string createPyName() const;
+  // auto createPyName() const -> const std::string;
+  auto makeXmlString() const -> const std::string;
+  auto makePyString() const -> const std::string;
 
-  const std::string makeXmlString() const;
-  const std::string makePyString() const;
+  auto convertToQString(const QString& qstrDelimiter = ", ") const -> QString;
+  auto convertToString(const QString& qstrDelimiter = ", ") const -> std::string;
 
-  const QString convertToQString(const QString& qstrDelimiter = ", ") const;
 private:
-  const QString listToQString(const QString &qstrDelimiter = ", ") const;
+  auto listToXmlString() const -> std::string;
+  auto listToQString(const QString& qstrDelimiter = ", ") const -> QString;
+  auto boolToPyString() const -> std::string;
+
 private:
   std::string m_strName;
   std::string m_strHiddenName;
   QVariant m_Value;
   QVariant::Type m_Type;
-  bool m_bEnum;
+  bool m_isEnum;
 };
-

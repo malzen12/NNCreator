@@ -1,88 +1,65 @@
 #pragma once
 
-#include <QWidget>
 #include <QLabel>
-#include <QVBoxLayout>
 #include <QPushButton>
-
-#include "NNLayerWidget.h"
 #include <QToolButton>
-#include <iostream>
+#include <QVBoxLayout>
+#include <QWidget>
 
-class Edge : public QHBoxLayout
-{
+#include <unordered_set>
+
+#include "NNLayerParams.h"
+
+class Edge : public QHBoxLayout {
   Q_OBJECT
-public:
-  Edge(std::size_t sId)
-    : /*layout{new QHBoxLayout},*/
-      button{new QToolButton},
-      label{new QLabel{QString::number(sId)}},
-      sId{sId}
-  {
-//    layout->addWidget(button);
-//    layout->addWidget(label);
-    this->addWidget(button);
-    this->addWidget(label);
-    createConnections();
-  }
-  void createConnections(){
-    auto bRes = true;
-    auto func = [&](){
-      emit deletedEdge(sId);
-      button->close();
-      label->close();
-//      delete layout;
-      delete this;
+  using KeyType = std::size_t;
 
-    };
-    bRes &= static_cast<bool>(connect(button, &QToolButton::clicked, func));
-    assert(bRes);
-  };
-  QHBoxLayout* getLayout(){
-//    return layout;
-    return this;
-  }
+public:
+  Edge(KeyType sId);
+
+  void createConnections();
+
 signals:
-  void deletedEdge(std::size_t);
+  void deletedEdge(KeyType);
+
 private:
-//  QHBoxLayout* layout;
   QToolButton* button;
-  QLabel* label;
-  std::size_t sId;
+  QLabel*      label;
+  KeyType      sId;
 };
 
-class ParamsEditorWidget: public QWidget
-{
+class ParamsEditorWidget : public QWidget {
   Q_OBJECT
+  using KeyType = std::size_t;
+  using HashSet = std::unordered_set<KeyType>;
 
 public:
   ParamsEditorWidget();
-
-public slots:
-  void onSetParams(const std::shared_ptr<NNLayerParams>& spParams);
-
-  void onForward(NNLayerWidget* pLayer);
 signals:
   void paramsChanged(const std::shared_ptr<NNLayerParams>& crParams);
   void deleteActive();
-  void deletedEdge(std::size_t);
-
-private slots:
-  void onConfirmParams();
+  void deletedEdge(KeyType);
+public slots:
+  void onSetParams(const std::shared_ptr<NNLayerParams>& spParams);
+  void onForward(const HashSet& forward);
 
 private:
   void initGUI();
   void createConnections();
 
-  void initForward(const NNLayerWidget* pLayer);
+  void initForward(const HashSet& forward);
   void initEditors();
-  const std::shared_ptr<NNLayerParams>& collectParams();
 
+  auto collectParams() -> const std::shared_ptr<NNLayerParams>&;
+private slots:
+  void onConfirmParams();
+  void onClearForward();
+  void onClearEditors();
 
+private:
   QLabel* m_pNameLabel;
 
   QVBoxLayout* m_pForwardLayout;
-
   QVBoxLayout* m_pParamsLayout;
 
   QPushButton* m_pConfirm;

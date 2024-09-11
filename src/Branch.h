@@ -1,50 +1,77 @@
 #pragma once
 
-#include <vector>
 #include <queue>
+#include <set>
 #include <unordered_map>
 #include <unordered_set>
-#include <set>
 
-struct BranchReturnValue{
-  std::unordered_map<std::size_t, std::vector<std::size_t>> mergerMap;
-  std::unordered_map<std::size_t, std::vector<std::size_t>> vLayersBranch;
-};
+class Branch {
+  using KeyType = std::size_t;
+  using Set = std::set<KeyType>;
+  using HashSet = std::unordered_set<KeyType>;
+  using HashMapOfHashSet = std::unordered_map<KeyType, HashSet>;
+  using HashMap = std::unordered_map<KeyType, KeyType>;
+  using Queue = std::queue<KeyType>;
 
-class Branch{
 public:
-  explicit Branch(const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& vLayers,
-                  const std::unordered_map<std::size_t, std::size_t>& vLayerInputCounter);
+  struct BranchReturnValue {
+    HashMapOfHashSet merger;
+    HashMapOfHashSet layersBranch;
+  };
 
-  BranchReturnValue calculate(std::size_t head);
+  template<class T>
+  static T hashSetFirst(const std::unordered_set<T>& set) {
+    if (set.empty()) return T{};
+    return *set.begin();
+  }
+
+  template<class T>
+  static T hashSetSecond(const std::unordered_set<T>& set) {
+    if (set.size() < 2) return T{};
+    return *std::next(set.begin());
+  }
+
+public:
+  explicit Branch(const HashMapOfHashSet& vLayers, const HashMap& vLayerInputCounter);
+
+  BranchReturnValue calculate(KeyType head);
+
 private:
-  void goToFirstUnhandledUntilFindMerge(std::size_t iCurrent, std::size_t branchValue);
-  void splitter(std::size_t iCurrent);
-  void merger();
+  void bypassGraph(KeyType index, KeyType branchValue);
+  void split(KeyType iCurrent);
+  void ifCompletePopQueue(KeyType index);
+  void merge();
+  void ifMergerInMerge(KeyType index, KeyType branchValue);
+  void ifSplitterInMerge(KeyType index, KeyType branchValue);
   void clear();
-  void init(std::size_t head);
+  void init(KeyType head);
 
-  void addToQueueIfSplitter(std::size_t value);
-  void addToQueueIfMergerIsFull(std::size_t value);
-  void mergeCalculate(std::size_t temp);
+  void addToQueueIfSplitter(KeyType value);
+  void addToQueueIfMergerIsFull(KeyType value);
+  void mergeCalculate(KeyType temp);
+  void ifNormal(KeyType index, KeyType branchValue);
+  void ifMerger(KeyType index, KeyType branchValue);
+  void firstVisit(KeyType index, KeyType branchValue);
+  void ifBranchIsEmpty(KeyType index, KeyType branchValue);
+  void subsequentVisit(KeyType index);
 
-  bool isSplitter(std::size_t value);
-  bool isMerger(std::size_t value);
-  bool isNormal(std::size_t value);
-  bool isExit(std::size_t value);
+  bool isSplitter(KeyType index) const;
+  bool isMerger(KeyType index) const;
+  bool isExit(KeyType index) const;
+  bool isNormal(KeyType index) const;
 
-  bool isNotVisited(std::size_t value);
-  bool isVisitedOnce(std::size_t value);
-  bool isCompleted(std::size_t value);
+  bool isNotVisited(KeyType index) const;
+  bool isVisitedOnce(KeyType index) const;
+  bool isCompleted(KeyType index) const;
+
 private:
-  const std::unordered_map<std::size_t, std::unordered_set<std::size_t>>& vLayers;
-  const std::unordered_map<std::size_t, std::size_t>& vLayerInputCounter;
-  std::unordered_map<std::size_t, std::vector<std::size_t>> vLayersBranch;
-  std::unordered_map<std::size_t, std::size_t> splitterMap;
-  std::queue<std::size_t> splitterQueue;
-  std::unordered_map<std::size_t, std::vector<std::size_t>> mergerMap;
-  std::queue<std::size_t> mergerQueue;
-
-  std::size_t m_branchValue = 0;
-  std::set<std::size_t> activeBranchSet;
+  const HashMapOfHashSet& m_layersForward;
+  const HashMap& m_layerInputCounter;
+  HashMapOfHashSet m_layersBranch;
+  HashMapOfHashSet m_merger;
+  HashMap m_splitter;
+  Queue m_mergerQueue;
+  Queue m_splitterQueue;
+  Set m_activeBranchSet;
+  KeyType m_branchValue{0};
 };

@@ -1,36 +1,58 @@
 #pragma once
 
-#include <QWidget>
-#include <QMenu>
-#include <unordered_set>
-
+#include "ConstructorWidgetHelper.h"
 #include "NNLayerWidget.h"
+#include <unordered_set>
+#include <QWidget>
 
-class ConstructorWorkSpace: public QWidget{
+class ConstructorWorkSpace : public QWidget {
   Q_OBJECT
+  using KeyType          = std::size_t;
+  using HashSet          = std::unordered_set<KeyType>;
+  using NNLayerContainer = std::unordered_map<KeyType, NNLayerWidget*>;
+
 public:
-  ConstructorWorkSpace(
-      const std::unordered_map<std::size_t, NNLayerWidget *> &vLayers,
-      const std::unordered_set<std::size_t>& ActiveSet,
-      QMenu *pMenu);
+  ConstructorWorkSpace(const NNLayerContainer& vLayers, const GraphManager& m_refGraph,
+                       const HashSet& ActiveSet);
 
   void add(const QPoint& crPoint, NNLayerWidget* pLayer);
-  QSize getQSize(){
-    return {width, height};
-  }
-  void setWidth(int value);
-  void setHeight(int value);
-private:
-  void initGUI();
-  void mousePressEvent(QMouseEvent* pEvent) final;
-  void paintEvent(QPaintEvent* pEvent) final;
-  void mouseMoveEvent(QMouseEvent* pEvent) final;
-  void resizeEvent(QResizeEvent*) final;
+
+  auto getQSize() const -> QSize;
+
+  bool isMoved();
+  void setMoved();
+public slots:
+  void onSendIsMoved(KeyType index);
+  void onSetIsMoved(bool value);
 
 private:
-  const std::unordered_map<std::size_t, NNLayerWidget*>& m_refvLayers;
-  const std::unordered_set<std::size_t>& m_refActiveSet;
-  QMenu* m_pMenu;
+  void initGUI();
+  void paintEvent(QPaintEvent* pEvent) final;
+  void mousePressEvent(QMouseEvent* pEvent) final;
+  void mouseMoveEvent(QMouseEvent* pEvent) final;
+  void mouseReleaseEvent(QMouseEvent* pEvent) final;
+  void resizeEvent(QResizeEvent*) final;
+
+  void drag(const QPoint eventPos);
+  auto dragChoose() const -> NNLayerWidget*;
+
+  auto dragCheckBorders(const int k_margin, NNLayerWidget* pLayer, const QPoint eventPos) -> QPoint;
+  void dragMove(const QPoint shift);
+  void dragResize(const int k_margin);
+private slots:
+  void onSetGrabbed(KeyType index, bool value);
+  void dragInit();
+
+private:
+  const NNLayerContainer& m_refvLayers;
+  const GraphManager& m_refGraph;
+  const HashSet& m_refActiveSet;
+
+  bool m_isMoved;
+  KeyType m_GrabbedIndex;
+  QPoint m_activeDragAreaPos;
+  QSize m_activeDragAreaSize;
+
   int width{0};
   int height{0};
 };

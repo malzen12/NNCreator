@@ -1,18 +1,10 @@
 #pragma once
 
 #include <vector>
-
 #include <QString>
 #include <QStringList>
 
-enum class e_padding_mode
-{
-  zeros = 0,
-  reflect,
-  replicate,
-  circular,
-  cnt
-};
+enum class e_padding_mode { zeros = 0, reflect, replicate, circular, cnt };
 
 class PaddingMode
 {

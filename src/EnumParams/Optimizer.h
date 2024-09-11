@@ -1,17 +1,10 @@
 #pragma once
 
 #include <vector>
-
 #include <QString>
 #include <QStringList>
 
-enum class optimizer
-{
-  adam = 0,
-  adam_w,
-  sgd,
-  cnt
-};
+enum class optimizer { adam = 0, adam_w, sgd, cnt };
 
 class Optimizer
 {
