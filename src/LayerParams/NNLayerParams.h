@@ -1,55 +1,46 @@
 #pragma once
 
+#include "NNParam.h"
+#include <memory>
+#include <sstream>
 #include <string>
 #include <vector>
-#include <functional>
-#include <memory>
 
-#include "NNParam.h"
+class NNLayerParams {
+protected:
+  using KeyType = std::size_t;
+  using Vector = std::vector<KeyType>;
+  using VectorOfVector = std::vector<Vector>;
+  using InputSizeType = std::vector<Vector>;
+  using NNParamContainer = std::vector<NNParam>;
 
-class NNLayerParams
-{
 public:
   NNLayerParams() = default;
-  explicit NNLayerParams(const std::string& strName, const std::vector<NNParam>& vParams);
+  explicit NNLayerParams(const std::string& strName, const NNParamContainer& vParams);
   virtual ~NNLayerParams() = default;
 
-  static std::shared_ptr<NNLayerParams> makeLinear();
-  static std::shared_ptr<NNLayerParams> makeConv1d();
-  static std::shared_ptr<NNLayerParams> makeConv2d();
-  static std::shared_ptr<NNLayerParams> makePool();
-  static std::shared_ptr<NNLayerParams> makePool2d();
-  static std::shared_ptr<NNLayerParams> makeEmbedding();
-  static std::shared_ptr<NNLayerParams> makeReshape();
-  static std::shared_ptr<NNLayerParams> makeNormalization();
-  static std::shared_ptr<NNLayerParams> makeActivation();
-  static std::shared_ptr<NNLayerParams> makeConcatinate();
-  static std::shared_ptr<NNLayerParams> makeDropout();
-  static std::shared_ptr<NNLayerParams> makeFlatten();
-  static std::shared_ptr<NNLayerParams> makeRecurrent();
-  static std::shared_ptr<NNLayerParams> makeMyRecurrent();
-
-  static std::string printLinear();
-  static std::string printConv1d();
-
-  const std::string& getName() const noexcept;
-  void setName(const std::string& strName) noexcept;
-
-  const std::vector<NNParam>& getParams() const noexcept;
-  void setParams(const std::vector<NNParam>& vParams) noexcept;
-
+  auto getName() const noexcept -> const std::string&;
+  auto getParams() const noexcept -> const NNParamContainer&;
   bool isValid() const noexcept;
 
-  virtual QString getDisplayName() const noexcept;
+  void setName(const std::string& strName) noexcept;
+  void setParams(const NNParamContainer& vParams) noexcept;
 
-  virtual bool checkInputSize(const std::vector<std::size_t>& vInputSize) const = 0;
-  virtual std::vector<std::size_t> calcOutputSize(const std::vector<std::size_t>& vInputSize) const = 0;
+  virtual auto getDisplayName() const noexcept -> QString;
 
-  std::string makeXmlString() const;
+  virtual auto copy() const -> std::shared_ptr<NNLayerParams> = 0;
+  virtual auto checkInputSize(const InputSizeType& vInputSizes, bool& isGlobalError) const -> std::string = 0;
+  virtual auto calcOutputSize(const InputSizeType& vInputSizes) const -> VectorOfVector = 0;
 
+  auto makeXmlString() const -> std::string;
+
+  auto save() const -> std::string;
+  void load(std::stringstream& stream);
+
+protected:
+  auto copyImpl() const -> NNParamContainer;
 
 protected:
   std::string m_strName;
-  std::vector<NNParam> m_vParams;
+  NNParamContainer m_vParams;
 };
-

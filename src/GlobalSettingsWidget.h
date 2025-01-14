@@ -1,44 +1,63 @@
 #pragma once
 
-#include <QWidget>
+#include "NNParam.h"
+#include <QGridLayout>
+#include <QLabel>
 #include <QLineEdit>
 #include <QPushButton>
-#include <QGridLayout>
+#include <QWidget>
 
-#include "LayerParams/NNParam.h"
+#include "ParamWidget.h"
+#include "qapplication.h"
+#include <iostream>
+#include <QFileDialog>
 
-class GlobalSettingsWidget: public QWidget
-{
+class GlobalSettingsWidget : public QWidget {
   Q_OBJECT
+  using KeyType = std::size_t;
+  using Vector = std::vector<KeyType>;
+  using NNParamContainer = std::vector<NNParam>;
 
 public:
   GlobalSettingsWidget();
 
+  auto getName() const -> std::string;
+
 signals:
-  void inputSizeChanged(const std::vector<std::size_t>& );
-  void makeNetXml(const std::vector<NNParam>& );
-  void makeNetPy(const std::vector<NNParam>& );
-  void makeTrainXml(const std::vector<NNParam>& );
+  void inputSizeChanged(const Vector&);
+  void makeTrainXml(const NNParamContainer&);
+  void makeNetXml();
+  void makeNetPy();
+  void isValid();
+  void notValid(const std::string&);
+
+  void setFileName(std::string);
+  void setWorkDir(std::string);
 
 private slots:
   void onUpdateInputSize();
-  void onMakeNetXml();
-  void onMakeNetPy();
   void onMakeTrainXml();
+
+  void onChoseWorkDir();
 
 private:
   void initGUI();
   void createConnections();
 
-  std::vector<NNParam> collectParams(QGridLayout* pLayout);
-  NNParam collectInputSize();
+  static auto collectParams(QGridLayout* pLayout) -> NNParamContainer;
+  auto collectInputSize() -> NNParam;
 
-  QPushButton* m_pConfirmSizeButton;
-  QGridLayout* m_pNetSettingsLayout;
-  QPushButton* m_pMakeNetXmlButton;
-  QPushButton* m_pMakeNetPyButton;
+private:
+  QGridLayout* m_pFileLayout;
+  QLabel* m_pWorkDirLabel;
+  ParamWidget* m_pFileNameParamWidget;
+  QPushButton* m_pChoseWorkDirButton;
 
   QGridLayout* m_pTrainSettingsLayout;
   QPushButton* m_pMakeTrainXmlButton;
-};
 
+  QGridLayout* m_pNetSettingsLayout;
+  QPushButton* m_pConfirmSizeButton;
+
+  ////////////////////////////////
+};

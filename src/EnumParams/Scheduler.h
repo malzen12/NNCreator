@@ -5,13 +5,7 @@
 #include <QString>
 #include <QStringList>
 
-enum class enu_scheduler
-{
-  linear = 0,
-  exponential,
-  multistep,
-  cnt
-};
+enum class enu_scheduler { linear = 0, exponential, multistep, cnt };
 
 class Scheduler
 {

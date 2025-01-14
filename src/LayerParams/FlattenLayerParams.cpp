@@ -6,17 +6,19 @@ FlattenLayerParams::FlattenLayerParams(const std::string& strName, const std::ve
   assert(m_vParams.size() >= 1);
 }
 
-bool FlattenLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
+bool FlattenLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
   auto lAxisToFlat = m_vParams[0].getValue().toList();
 
   auto sTo = lAxisToFlat[1].toUInt();
 
+  auto& vInputSize = vInputSizes.front();
   return  vInputSize.size() > sTo;
 }
 
-std::vector<std::size_t> FlattenLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
+std::vector<std::size_t> FlattenLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   assert(vInputSize.size() > 1);
 
   auto lAxisToFlat = m_vParams[0].getValue().toList();

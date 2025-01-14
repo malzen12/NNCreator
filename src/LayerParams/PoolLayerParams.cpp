@@ -6,15 +6,17 @@ PoolLayerParams::PoolLayerParams(const std::string& strName, const std::vector<N
   assert(m_vParams.size() >= 4);
 }
 
-bool PoolLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
+bool PoolLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
   auto sKernel = m_vParams[0].getValue().toUInt();
 
+  auto& vInputSize = vInputSizes.front();
   return  vInputSize.back() > sKernel;
 }
 
-std::vector<std::size_t> PoolLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
+std::vector<std::size_t> PoolLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   assert(vInputSize.size() > 1);
 
   auto sKernel = m_vParams[0].getValue().toUInt();

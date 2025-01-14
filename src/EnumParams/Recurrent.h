@@ -1,17 +1,10 @@
 #pragma once
 
 #include <vector>
-
 #include <QString>
 #include <QStringList>
 
-enum class enu_recurrent
-{
-  rnn = 0,
-  lstm,
-  gru,
-  cnt
-};
+enum class enu_recurrent { rnn = 0, lstm, gru, cnt };
 
 class Recurrent
 {

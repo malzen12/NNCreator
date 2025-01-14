@@ -1,16 +1,10 @@
 #pragma once
 
 #include <vector>
-
 #include <QString>
 #include <QStringList>
 
-enum class enu_normalization
-{
-  batchnorm1d = 0,
-  layernorm,
-  cnt
-};
+enum class enu_normalization { batchnorm1d = 0, layernorm, cnt };
 
 class Normalization
 {

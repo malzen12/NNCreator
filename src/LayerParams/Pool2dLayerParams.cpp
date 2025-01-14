@@ -11,17 +11,19 @@ Pool2dLayerParams::Pool2dLayerParams(const std::string& strName, const std::vect
   assert(m_vParams.size() >= 4);
 }
 
-bool Pool2dLayerParams::checkInputSize(const std::vector<std::size_t>& vInputSize) const
+bool Pool2dLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
   auto lKernel = m_vParams[0].getValue().toList();
 
+  auto& vInputSize = vInputSizes.front();
   return vInputSize.size() > 2
       && vInputSize[vInputSize.size() - 1] > lKernel[1].toUInt()
       && vInputSize[vInputSize.size() - 2] > lKernel[0].toUInt();
 }
 
-std::vector<std::size_t> Pool2dLayerParams::calcOutputSize(const std::vector<std::size_t>& vInputSize) const
+std::vector<std::size_t> Pool2dLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
+  auto& vInputSize = vInputSizes.front();
   assert(vInputSize.size() > 1);
 
   auto lKernel = m_vParams[0].getValue().toList();

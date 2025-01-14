@@ -5,30 +5,21 @@
 #include <QString>
 #include <QStringList>
 
-enum class activation_func
-{
-  relu = 0,
-  leaky_relu,
-  sigmoid,
-  tanh,
-  selu,
-  softmax,
-  cnt
-};
+enum class activation_func { relu = 0, leaky_relu, sigmoid, tanh, selu, softmax, cnt };
 
-class ActivationFunc
-{
+class ActivationFunc {
 public:
-  explicit ActivationFunc(activation_func Type);
+  explicit ActivationFunc(activation_func type);
+  explicit ActivationFunc(const std::string& strName);
+  explicit ActivationFunc(const QString& qstrName);
 
-  static ActivationFunc fromString(const QString& qstrName);
+  static auto getAllNames() -> QStringList;
+  static auto getAllValues() -> std::vector<activation_func>;
+  static auto getClassName() -> std::string;
 
-  static QStringList getAllNames();
-  static std::vector<activation_func> getAllValues();
+  static auto fromString(const QString& qstrName);
 
-  static std::string getClassName();
-
-  QString toString() const;
+  auto toString() const -> QString;
 
 private:
   activation_func m_Type;

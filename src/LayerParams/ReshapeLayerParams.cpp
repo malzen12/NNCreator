@@ -6,12 +6,12 @@ ReshapeLayerParams::ReshapeLayerParams(const std::string& strName, const std::ve
   assert(m_vParams.size() >= 1);
 }
 
-bool ReshapeLayerParams::checkInputSize(const std::vector<std::size_t>& /*vInputSize*/) const
+bool ReshapeLayerParams::checkInputSize(const InputSizeType& vInputSizes) const
 {
   return !m_vParams[0].getValue().toList().empty();
 }
 
-std::vector<std::size_t> ReshapeLayerParams::calcOutputSize(const std::vector<std::size_t>& /*vInputSize*/) const
+std::vector<std::size_t> ReshapeLayerParams::calcOutputSize(const InputSizeType& vInputSizes) const
 {
   auto List = m_vParams[0].getValue().toList();
   std::vector<std::size_t> vRes;
